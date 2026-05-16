@@ -50,3 +50,4 @@ pocketbase/pocketbase.exe
 scripts/seed-*.ts
 scripts/seed-*.js
 *.log
+pocketbase/*.zip
