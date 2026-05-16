@@ -126,3 +126,19 @@ the relevant file instead of correcting again.
 
 Keep this file under 200 lines. Move anything area-specific into a
 path-scoped rule.
+
+---
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in the centfolio GitHub repo; agents use the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Canonical defaults (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
