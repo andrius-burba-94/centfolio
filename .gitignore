@@ -51,3 +51,6 @@ scripts/seed-*.ts
 scripts/seed-*.js
 *.log
 pocketbase/*.zip
+
+# Skills framework — .agents/ is the symlink target, restorable via `npx skills install`
+.agents/
