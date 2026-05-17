@@ -5,13 +5,21 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // Override default ignores of eslint-config-next.
   globalIgnores([
-    // Default ignores of eslint-config-next:
+    // Defaults from eslint-config-next
     ".next/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
+
+    // PocketBase artifacts — not application source
+    "pocketbase/**",
+
+    // Skills framework cache (mirrors gitignore)
+    ".agents/**",
+
+    // Test setup file pulls in jest-dom matchers; no app code
+    "vitest.setup.ts",
   ]),
 ]);
 
