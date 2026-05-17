@@ -1,0 +1,89 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":dependencyDashboard",
+    ":maintainLockFilesWeekly"
+  ],
+  "schedule": ["before 9am on Saturday"],
+  "timezone": "Europe/Vilnius",
+  "labels": ["dependencies"],
+  "prHourlyLimit": 2,
+  "prConcurrentLimit": 5,
+  "rangeStrategy": "bump",
+  "packageRules": [
+    {
+      "description": "Auto-merge patch updates after CI passes",
+      "matchUpdateTypes": ["patch", "pin", "digest"],
+      "automerge": true,
+      "platformAutomerge": true
+    },
+    {
+      "description": "Group all TypeScript / type-definition updates",
+      "matchPackageNames": [
+        "typescript",
+        "@types/{/,}**",
+        "@typescript-eslint/{/,}**"
+      ],
+      "groupName": "typescript ecosystem"
+    },
+    {
+      "description": "Group all React updates together",
+      "matchPackageNames": ["react", "react-dom", "@types/react{/,}**"],
+      "groupName": "react ecosystem"
+    },
+    {
+      "description": "Group all Tailwind updates together",
+      "matchPackageNames": ["tailwindcss{/,}**", "@tailwindcss/{/,}**"],
+      "groupName": "tailwind ecosystem"
+    },
+    {
+      "description": "Group all Vitest / Testing Library updates",
+      "matchPackageNames": [
+        "jsdom",
+        "vitest{/,}**",
+        "@vitest/{/,}**",
+        "@vitejs/{/,}**",
+        "@testing-library/{/,}**"
+      ],
+      "groupName": "vitest ecosystem"
+    },
+    {
+      "description": "Group ESLint and Next.js's eslint config together",
+      "matchPackageNames": [
+        "eslint",
+        "eslint-config-next{/,}**",
+        "@eslint/{/,}**"
+      ],
+      "groupName": "eslint ecosystem"
+    },
+    {
+      "description": "Group all GitHub Actions together",
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions"
+    },
+    {
+      "description": "Major updates: never auto-merge, require label review",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "addLabels": ["major-update", "needs-review"],
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "description": "Next.js major updates: extra caution, longer wait",
+      "matchPackageNames": ["next"],
+      "matchUpdateTypes": ["major"],
+      "minimumReleaseAge": "30 days"
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "automerge": false,
+    "schedule": "at any time"
+  },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 9am on the first day of the month"]
+  }
+}
