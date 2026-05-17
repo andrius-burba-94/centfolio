@@ -241,3 +241,4 @@ Living documents to be authored alongside this one:
 - **`docs/adr/0003-receipt-ocr.md`** — Gemini 2.5 Flash with structured outputs
 - **`docs/adr/0004-design-system.md`** — Modern Lithuanian, Fraunces + Inter, terracotta palette
 - **`docs/adr/0005-no-historical-backfill.md`** — Why bank sync starts at connection time
+- **`docs/adr/0006-testing-strategy.md`** — Vitest + RTL + Playwright, TDD only for pure-logic modules
