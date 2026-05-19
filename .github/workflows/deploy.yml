@@ -1,0 +1,35 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Prevent overlapping deploys. If a new push lands while one is running,
+# wait for the current deploy to finish before starting the next one.
+# Unlike CI, we do NOT cancel in-progress deploys — interrupting a build/restart
+# midway is worse than running an extra one.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://centfolio.labrium.online
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script_stop: true
+          script: |
+            cd /var/www/centfolio
+            bash scripts/deploy.sh
