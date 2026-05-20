@@ -4,6 +4,7 @@ Universal agent behavior: @AGENTS.md
 Project vision and scope: @PROJECT.md
 Domain language and entities: @CONTEXT.md
 Design strategy and brand: @PRODUCT.md
+Design tokens and components: @DESIGN.md
 Architectural decisions: docs/adr/
 
 ---
