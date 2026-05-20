@@ -201,22 +201,45 @@ across reload; logout returns to `/login`.
 
 Closes the phase.
 
+- `pocketbase/VERSION` — single-line text file pinning the
+  PocketBase release (e.g. `0.38.1`, matching the locally-installed
+  version). Source of truth for the install script.
+- `scripts/install-pocketbase.sh` — idempotent: read `VERSION`,
+  download the release zip from
+  `github.com/pocketbase/pocketbase/releases`, verify SHA-256
+  against the published checksum, unzip to `pocketbase/pocketbase`,
+  `chmod +x`. Skip if the binary is already at the pinned version
+  (check via `./pocketbase --version`). The binary itself stays
+  `.gitignored`; only the version pin is committed.
 - `scripts/seed.ts` — find-or-create idempotent seed user; reads
   `POCKETBASE_ADMIN_EMAIL` / `POCKETBASE_ADMIN_PASSWORD` from env;
   fails loudly if either is missing
 - `tests/e2e/auth.spec.ts` — the acceptance path from above;
   assertions via `data-testid`
 - CI workflow updates:
-  - Spawn `pocketbase/pocketbase` as a background process
+  - Run `scripts/install-pocketbase.sh` to download the pinned
+    binary (the binary is not in the repo — see refutation note
+    below)
+  - Spawn the binary as a background process
   - Wait-for-port helper (PB takes 1–2s; naive Playwright spawn
     sometimes hits ECONNREFUSED):
     `for i in {1..30}; do nc -z 127.0.0.1 8090 && break; sleep 1; done`
     then fail loudly if the port never comes up
   - Run `npm run seed`
   - Run `npx playwright test`
+- `package.json` `setup` script invoking
+  `scripts/install-pocketbase.sh` so fresh local clones work
+  without a manual download step
 - `CHANGELOG.md` Phase 1 entry (Keep a Changelog format,
   per CLAUDE.md)
 - PROJECT.md: mark Phase 1 ✓ done
+
+**Binary-acquisition note.** During grilling I asserted "the PB
+binary is in repo at `pocketbase/pocketbase`." That was wrong —
+the file is `.gitignored` and exists only on the local dev
+machine. PR 5 fixes this with the version pin + install script
+above. Production is unaffected (the VPS PB is its own systemd
+service, installed manually once; deploy.sh does not touch it).
 
 Verify: E2E passes locally and in CI; merge to `main` triggers
 deploy; production URL reachable; login round-trip works in prod.
@@ -242,10 +265,12 @@ These do not block planning. Resolve in the PR they touch.
   `data-theme` unless a clear reason emerges.
 - **Wordmark weight** — Fraunces Regular vs. Italic, and what
   optical size. `/impeccable critique` will weigh in.
-- **CI runner / PB binary compatibility** — existing CI uses
-  `ubuntu-latest`; PB Linux binary is committed at
-  `pocketbase/pocketbase`. Confirm architecture and execute
-  permission at PR 5 time.
+- **PocketBase version pin** — `pocketbase/pocketbase` is
+  `.gitignored`; PR 5 introduces a version pin (`pocketbase/VERSION`)
+  and `scripts/install-pocketbase.sh`. Confirm the version of record
+  (match locally-installed 0.38.x) and the published SHA-256 at PR 5
+  time. Linux/amd64 archive on `ubuntu-latest` CI; Linux/arm64 only
+  needed if a future CI runner moves to ARM.
 
 ## References
 
