@@ -1,5 +1,5 @@
 ---
-name: Centfolio — The Vilnius Ledger
+name: Centfolio, The Vilnius Ledger
 description: A personal finance application that combines bank transactions, itemized receipts, and investment holdings into a single calm, considered view.
 colors:
   # Light mode neutrals
@@ -155,7 +155,7 @@ components:
     size: "32px"
 ---
 
-# Design System: Centfolio — The Vilnius Ledger
+# Design System: Centfolio, The Vilnius Ledger
 
 ## 1. Overview
 
@@ -173,7 +173,7 @@ The visual register sits in a print-adjacent neighbourhood. Headlines
 are set in Fraunces with the weight of a publication's masthead, never
 the italic flourish of an AI-marketing page. Body text and tabular
 numerics are set in Inter with generous whitespace and ample leading.
-The palette is terracotta-led — warm earth tones — never the cool-blue
+The palette is terracotta-led (warm earth tones), never the cool-blue
 convention of banking apps or the cool-gray neutrality of tech-SaaS.
 Light mode reads as warm paper; dark mode reads as warm ink. Both are
 hand-tuned to clear the WCAG AAA contrast floor PRODUCT.md commits to
@@ -193,7 +193,7 @@ not a queue to clear.
 **Key Characteristics:**
 
 - Warm terracotta-and-paper palette; never blue, never cool gray
-- Fraunces wordmark and headlines, Inter body — publication, not marketing
+- Fraunces wordmark and headlines, Inter body; publication, not marketing
 - AAA contrast on body text and numerals in both modes; dark mode hand-tuned, not generated
 - Generous whitespace; sparse density; one thing at a time
 - Editorial typography hierarchy, not dashboard density
@@ -222,7 +222,7 @@ rare.
 
 - **Button Brick** (`oklch(0.45 0.13 38)` ~ `#9E4928`): the
   Primary button's resting background in light mode. Decoupled from
-  Vilnius Brick — a deeper terracotta chosen for AAA-adjacent contrast
+  Vilnius Brick, a deeper terracotta chosen for AAA-adjacent contrast
   against on-button cream text. See the Brand-vs-Button Decoupling
   Rule below.
 - **Button Brick (Dark)** uses `terracotta-dark` as the resting
@@ -231,8 +231,8 @@ rare.
   the page and the on-button text reads as the page color showing
   through.
 - Hover and active steps move deeper in light (L=0.40, L=0.35) and
-  lighter in dark (L=0.70, L=0.75). The semantic — feedback through
-  contrast shift — holds; the direction adapts to mode.
+  lighter in dark (L=0.70, L=0.75). The semantic (feedback through
+  contrast shift) holds; the direction adapts to mode.
 
 ### Neutral (light mode)
 
@@ -302,13 +302,13 @@ fine-tune values at first real render.
 **The Reading-Load Rule.** Text tokens carry the contrast obligation,
 not the chrome.
 
-- `text-primary` — body copy, numerals, field labels, anything
+- `text-primary`: body copy, numerals, field labels, anything
   load-bearing for comprehension. AAA contrast required against any
   background.
-- `text-secondary` — captions, tooltips, helper text, metadata
+- `text-secondary`: captions, tooltips, helper text, metadata
   *adjacent to* a primary value. AA floor; AAA where the palette
   allows. Never used for numerals or amounts.
-- `text-tertiary` — placeholders, disabled states, decorative
+- `text-tertiary`: placeholders, disabled states, decorative
   timestamps. AA target; sub-AA acceptable for placeholders only.
   Never used for content the user must read.
 
@@ -335,15 +335,15 @@ fallback)
 **Label/Mono Font:** none distinct; Inter at the label step.
 
 **Character:** Fraunces in the upright register reads as a
-publication's masthead — Pentagram, the New Yorker, MIT Tech Review.
-Inter at 17px with 1.60 leading reads as iA Writer or Bear — calm,
+publication's masthead: Pentagram, the New Yorker, MIT Tech Review.
+Inter at 17px with 1.60 leading reads as iA Writer or Bear: calm,
 generously laid out, an evening's reading object.
 
 ### Hierarchy
 
 The scale is essentially a perfect fourth (ratio 1.333) through the
 title-to-headline steps, with display deliberately stepped out at 48px
-— larger than `1.333³ × 17 = 40` would yield — for hero impact. The
+(larger than `1.333³ × 17 = 40` would yield) for hero impact. The
 40px alternative loses the publication-mast feel on purpose; do not
 "correct" it.
 
@@ -365,7 +365,7 @@ title-to-headline steps, with display deliberately stepped out at 48px
 ### Tabular figures
 
 `font-feature-settings: "tnum" 1` applies to **both fonts at every
-step that ever renders a numeral** — Inter at title / body / label
+step that ever renders a numeral**: Inter at title / body / label
 and Fraunces at display / headline. The future "Held" total at
 display 48px is Fraunces, and must inherit tnum, or a single
 non-tabular Fraunces numeral reads as a typo against the rest of the
@@ -374,8 +374,8 @@ page.
 ### Named Rules
 
 **The Publication-Mast Rule.** Fraunces is set upright only, in a
-publication-mast register. Italic Fraunces — particularly
-italic-serif hero text — is the AI-marketing-page reflex ADR-0004
+publication-mast register. Italic Fraunces (particularly
+italic-serif hero text) is the AI-marketing-page reflex ADR-0004
 explicitly rejects. *The Vilnius Ledger* is set in the calm of a
 printed page; emphasis comes from weight contrast and scale, not
 from cursive flourish. If italic is needed at all, it lives in Inter
@@ -390,7 +390,7 @@ reference: magazines convey depth through type, color, and layout,
 not through default-state shadows.
 
 Shadows are reserved for elements that float over the page without a
-flat alternative — dropdowns, toasts, and (later) modals. There is
+flat alternative: dropdowns, toasts, and (later) modals. There is
 exactly one shadow vocabulary entry, used by all such elements.
 
 ### Shadow Vocabulary
@@ -414,7 +414,7 @@ float (dropdowns, toasts, modals).
 not narrate. Defaults: 180ms duration,
 `cubic-bezier(0.25, 1, 0.5, 1)` (ease-out-quart) easing. No bounce,
 no elastic, no choreography. `prefers-reduced-motion` is respected
-on every animation — when set, durations collapse to 0ms and changes
+on every animation; when set, durations collapse to 0ms and changes
 apply instantly rather than animating.
 
 ## 5. Components
@@ -446,7 +446,7 @@ Two variants for Phase 1: **primary** and **ghost**. No "secondary."
 
 ### Inputs
 
-- **Background:** `bg-page` — even when the input lives inside a
+- **Background:** `bg-page`, even when the input lives inside a
   card. The Cut-Into-the-Page Rule is load-bearing.
 - **Border:** 1px solid `border-strong`.
 - **Shape:** `rounded-sm`.
@@ -495,10 +495,10 @@ input.
 
 Variants:
 
-- **default** — no icon; `text-primary` content.
-- **success** — 16px checkmark in mode-appropriate `text-earned` +
+- **default**: no icon; `text-primary` content.
+- **success**: 16px checkmark in mode-appropriate `text-earned` +
   `text-primary` content.
-- **error** — 16px exclamation in mode-appropriate `text-spent` +
+- **error**: 16px exclamation in mode-appropriate `text-spent` +
   `text-primary` content. Duration extended to 6000ms (more reading
   time).
 
@@ -511,7 +511,7 @@ side-stripe accent borders are banned by the absolute bans below.
 - **Font:** Fraunces (variable), `opsz` ~36.
 - **Weight:** 400 (Regular).
 - **Size:** 22px.
-- **Color:** `text-primary` — **not** terracotta.
+- **Color:** `text-primary`, **not** terracotta.
 - **Tracking:** -0.005em.
 - **Italic:** never (Publication-Mast Rule).
 - **Element:** `<span>` in Phase 1; `<Link href="/dashboard">` from
@@ -522,7 +522,7 @@ side-stripe accent borders are banned by the absolute bans below.
 A Ghost button with a Lucide icon, opening a dropdown.
 
 - **Trigger:** Ghost button, 32×32px, square padding. Icon 18px
-  Lucide — `monitor` for system, `sun` for light, `moon` for dark —
+  Lucide (`monitor` for system, `sun` for light, `moon` for dark)
   in `text-secondary`.
 - **Dropdown:** 8px gap below the trigger, right-aligned.
   `bg-surface`, `rounded-md`, `lifted-floating` shadow, 8px padding.
@@ -558,7 +558,7 @@ destructive actions, never for "save / submit / log in." A user must
 always have exactly one terracotta-stamped path through a form.
 
 **The Cut-Into-the-Page Rule.** Inputs sit on `bg-page`, never on
-`bg-surface` — even when the form lives inside a card. This inverts
+`bg-surface`, even when the form lives inside a card. This inverts
 the SaaS convention (bright input on dim background) and ties to the
 editorial framing: the page is the writing surface; an input is a
 space the user writes back into it. If a form lives in a card, the
@@ -567,7 +567,7 @@ The input visually breaks through the card to the page beneath.
 
 **The Brand-vs-Button Decoupling Rule.** The brand `terracotta`
 (L=0.55, the system's identity color) carries focus rings, selected
-states, and semantic emphasis — surfaces where it has no on-color
+states, and semantic emphasis: surfaces where it has no on-color
 text contrast obligation. The Primary button background is a
 *separate* token (`button-bg-primary`, L=0.45 in light mode) chosen
 for AAA-adjacent contrast against on-button text. Same hue family,
@@ -588,7 +588,7 @@ surface.
 
 Click-focus deliberately doesn't render the ring. Clicking is its
 own visual feedback; the ring would be redundant noise. Keyboard
-focus always does — the ring is the only feedback the keyboard user
+focus always does; the ring is the only feedback the keyboard user
 has.
 
 **The Initials-Not-Avatar Rule.** Phase 1 user menu shows initials
