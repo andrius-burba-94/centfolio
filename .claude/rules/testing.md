@@ -30,20 +30,45 @@ target for UI.
 
 ## E2E (Playwright)
 
-Roughly 10 paths total in v1, covering the critical happy paths:
+Roughly 10 paths total across v1 and v1.5, covering the critical
+happy paths:
 
-1. Sign up via invite, log in, log out
-2. Add a manual transaction with a category
-3. Upload a receipt, confirm extraction
-4. Connect a bank (mocked GoCardless), trigger sync
-5. Match a receipt to a transaction
-6. Add a holding, see it on the dashboard
-7. Set a budget, see progress against it
-8. Switch theme (light/dark)
-9. Filter transactions by tag
-10. View "Needs review" list and accept an AI suggestion
+1. Log in as a seeded user, switch theme, log out (Phase 1)
+2. Add a manual transaction with a category (Phase 2)
+3. Upload a receipt, confirm extraction (Phase 3)
+4. Connect a bank (mocked GoCardless), trigger sync (Phase 4)
+5. Match a receipt to a transaction (Phase 5)
+6. Add a holding, see it on the dashboard (Phase 6)
+7. Set a budget, see progress against it (Phase 7)
+8. Filter transactions by tag (Phase 7)
+9. View "Needs review" list and accept an AI suggestion (Phase 4 or
+   Phase 7, depending on when the list lands)
+10. Sign up via invite, log in (v1.5 — the invite flow's headline
+    test)
 
-E2E tests run against a seeded test database, not production.
+E2E tests run against a seeded test database, not production. The
+seed strategy is find-or-create idempotent: a `pnpm seed` (or
+equivalent) script creates the canonical test user via PocketBase's
+admin API, reading credentials from `POCKETBASE_ADMIN_EMAIL` /
+`POCKETBASE_ADMIN_PASSWORD`. In CI, PocketBase is spawned as a
+background process with a wait-for-port helper before Playwright
+starts.
+
+## Assertion style
+
+The choice of selector depends on the test type:
+
+- **Component tests (Vitest + RTL).** Query by accessible name and
+  role first (`getByRole`, `getByLabelText`). Fall back to
+  `data-testid` only when no accessible query expresses the intent
+  (e.g. asserting an empty-state container that has no role of
+  its own).
+- **E2E tests (Playwright).** Assert by `data-testid`, not by
+  user-facing copy. Copy gets edited often; `data-testids` survive
+  copy changes and read as "this test cares about the *thing*, not
+  the wording on it." Reserve copy assertions for tests where the
+  copy itself is the behavior under test (e.g. an error message's
+  exact wording).
 
 ## Test shapes
 

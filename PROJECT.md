@@ -66,15 +66,22 @@ success criteria are met and the work is merged to `main` and deployed.
 ### Phase 1 — Foundation
 **Goal**: Log in and see an empty dashboard.
 
-- Auth (email/password + OAuth via PocketBase), invite-only registration
-- Admin and user roles
-- App layout, navigation, light/dark mode
-- Base component library (cards, buttons, forms, tables) per the design system
+- Auth (email/password login via PocketBase). OAuth and
+  register-via-invite deferred to v1.5, where the invite flow is the
+  headline feature
+- Admin and user roles (schema only; no admin UI in Phase 1)
+- App layout (top bar only — sidebar deferred to Phase 2),
+  navigation, light/dark mode
+- Base component library (Button, Card, Input, Label, Form, Sonner
+  toast) per the design system. Table, Skeleton, Avatar, and other
+  primitives added in later phases as they become needed
 - Deployment pipeline (local → GitHub → VPS) verified end-to-end
 
-**Success criteria**: A user can register via invite, log in, see the
-dashboard with empty states, switch themes, and log out. CI runs on every
-PR. `main` push deploys to production automatically.
+**Success criteria**: A user (pre-seeded by admin via PocketBase) can
+log in, see the dashboard with empty states, switch themes, and log
+out. CI runs on every PR. `main` push deploys to production
+automatically. See `docs/plans/phase-1-foundation.md` for the
+execution breakdown.
 
 ### Phase 2 — Manual transactions
 **Goal**: Usable as a basic manual spending tracker.
