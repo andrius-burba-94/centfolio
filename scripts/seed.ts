@@ -33,6 +33,16 @@ async function main() {
   console.log(`Authenticating as superuser ${adminEmail} against ${PB_URL}...`);
   await pb.collection("_superusers").authWithPassword(adminEmail, adminPassword);
 
+  // Ensure the users collection allows password auth for non-superusers.
+  // The committed schema ships with authRule="" (closed), which blocks all
+  // non-superuser login. For Phase 1's seed-then-login flow to work, the
+  // rule must be null (open) or a permissive expression.
+  const usersCollection = await pb.collections.getOne("users");
+  if (usersCollection.authRule !== null) {
+    await pb.collections.update("users", { authRule: null });
+    console.log("Patched users.authRule -> null (open password auth)");
+  }
+
   try {
     const existing = await pb
       .collection("users")
