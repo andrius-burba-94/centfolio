@@ -63,7 +63,7 @@ The seven phases below are the v1 MVP. Each phase is a GitHub milestone,
 roughly one to two weeks of evening work. A phase is "done" when its
 success criteria are met and the work is merged to `main` and deployed.
 
-### Phase 1 — Foundation
+### Phase 1 — Foundation ✓ shipped 2026-05-22
 **Goal**: Log in and see an empty dashboard.
 
 - Auth (email/password login via PocketBase). OAuth and

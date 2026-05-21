@@ -59,5 +59,11 @@ pocketbase/*.zip
 # ignore.md (the accepted-findings list) IS tracked; timestamps are not.
 .impeccable/critique/2*.md
 
+# Playwright test outputs (local + CI)
+/test-results/
+/playwright-report/
+/playwright/.cache/
+*.log
+
 # Skills framework — .agents/ is the symlink target, restorable via `npx skills install`
 .agents/
