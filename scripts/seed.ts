@@ -64,6 +64,20 @@ async function main() {
     verified: true,
   });
   console.log(`Seed user created: ${seedEmail} (id=${created.id})`);
+
+  // Self-verify: a fresh PB client (no superuser auth) must be able to log in
+  // as the just-created user. If this fails, the issue is the user's record
+  // or the collection auth config; not the Next.js side.
+  const verifyPb = new PocketBase(PB_URL);
+  verifyPb.autoCancellation(false);
+  try {
+    await verifyPb.collection("users").authWithPassword(seedEmail, seedPassword);
+    console.log("Self-verified: seed user can authenticate with the given password.");
+  } catch (err) {
+    console.error("Self-verify FAILED. Seed user cannot authenticate:");
+    console.error(err);
+    process.exit(1);
+  }
 }
 
 main().catch((err) => {
