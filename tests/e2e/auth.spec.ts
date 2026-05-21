@@ -22,6 +22,9 @@ test.describe("Phase 1 acceptance path", () => {
     await expect(page.getByTestId("login-error")).toBeVisible();
     await expect(page).toHaveURL(/\/login$/);
 
+    // React 19 resets form fields after a server-action transition; refill
+    // both inputs explicitly rather than relying on retained values.
+    await page.getByTestId("email-input").fill(EMAIL);
     await page.getByTestId("password-input").fill(PASSWORD);
     await page.getByTestId("submit").click();
     await expect(page).toHaveURL(/\/dashboard$/);

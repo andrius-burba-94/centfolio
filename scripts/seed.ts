@@ -37,11 +37,12 @@ async function main() {
   // The committed schema ships with authRule="" (closed in PB terms),
   // which blocks all non-superuser login. SDK update with null doesn't
   // consistently round-trip; using a known-permissive expression instead.
-  const before = await pb.collections.getOne("users");
-  console.log(`users.authRule BEFORE patch: ${JSON.stringify(before.authRule)}`);
-  await pb.collections.update("users", { authRule: 'id != ""' });
-  const after = await pb.collections.getOne("users");
-  console.log(`users.authRule AFTER patch: ${JSON.stringify(after.authRule)}`);
+  const usersCollection = await pb.collections.getOne("users");
+  const permissiveRule = 'id != ""';
+  if (usersCollection.authRule !== permissiveRule) {
+    await pb.collections.update("users", { authRule: permissiveRule });
+    console.log(`Patched users.authRule -> ${permissiveRule}`);
+  }
 
   try {
     const existing = await pb
