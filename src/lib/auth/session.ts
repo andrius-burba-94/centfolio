@@ -2,8 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type PocketBase from "pocketbase";
-
-import { createServerClient } from "@/lib/pocketbase/server";
+import type { RecordModel } from "pocketbase";
 
 export const SESSION_COOKIE = "pb_auth";
 
@@ -14,22 +13,42 @@ export type SessionUser = {
   role: "user" | "admin";
 };
 
+type SessionPayload = {
+  token: string;
+  record: RecordModel;
+};
+
+function parseSession(cookieValue: string): SessionPayload | null {
+  try {
+    const parsed = JSON.parse(cookieValue) as unknown;
+    if (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      "token" in parsed &&
+      "record" in parsed &&
+      typeof (parsed as SessionPayload).token === "string"
+    ) {
+      return parsed as SessionPayload;
+    }
+  } catch {
+    // fall through
+  }
+  return null;
+}
+
 export async function getCurrentUser(): Promise<SessionUser | null> {
   const cookieStore = await cookies();
   const cookieValue = cookieStore.get(SESSION_COOKIE)?.value;
   if (!cookieValue) return null;
 
-  const pb = createServerClient();
-  pb.authStore.loadFromCookie(`${SESSION_COOKIE}=${cookieValue}`);
+  const session = parseSession(cookieValue);
+  if (!session) return null;
 
-  if (!pb.authStore.isValid || !pb.authStore.record) return null;
-
-  const record = pb.authStore.record;
   return {
-    id: String(record.id),
-    email: String(record.email),
-    name: String(record.name ?? ""),
-    role: (record.role as "user" | "admin") ?? "user",
+    id: String(session.record.id),
+    email: String(session.record.email ?? ""),
+    name: String(session.record.name ?? ""),
+    role: (session.record.role as "user" | "admin") ?? "user",
   };
 }
 
@@ -41,12 +60,11 @@ export async function requireUser(): Promise<SessionUser> {
 
 export async function persistAuthCookie(pb: PocketBase): Promise<void> {
   const cookieStore = await cookies();
-  const exported = pb.authStore.exportToCookie(
-    { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "Lax" },
-    SESSION_COOKIE,
-  );
-  const value = exported.split("=", 2)[1]?.split(";", 1)[0] ?? "";
-  cookieStore.set(SESSION_COOKIE, value, {
+  const payload: SessionPayload = {
+    token: pb.authStore.token,
+    record: (pb.authStore.record ?? pb.authStore.model) as RecordModel,
+  };
+  cookieStore.set(SESSION_COOKIE, JSON.stringify(payload), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
