@@ -1,26 +1,98 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-placeholder: var(--placeholder);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-positive: var(--positive);
+  --color-positive-foreground: var(--positive-foreground);
+
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-inter);
+
+  --text-display: 48px;
+  --text-display--line-height: 1.10;
+  --text-display--letter-spacing: -0.01em;
+  --text-headline: 30px;
+  --text-headline--line-height: 1.20;
+  --text-title: 22px;
+  --text-title--line-height: 1.35;
+  --text-body: 17px;
+  --text-body--line-height: 1.60;
+  --text-label: 14px;
+  --text-label--line-height: 1.40;
+  --text-label--letter-spacing: 0.01em;
+  --text-wordmark: 22px;
+  --text-wordmark--line-height: 1.20;
+  --text-wordmark--letter-spacing: -0.005em;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  --shadow-lifted-floating: 0 8px 24px -8px oklch(0.55 0.12 38 / 0.18);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: oklch(0.99 0.005 38);
+  --foreground: oklch(0.22 0.020 38);
+  --card: oklch(0.96 0.010 38);
+  --card-foreground: oklch(0.22 0.020 38);
+  --muted: oklch(0.94 0.012 38);
+  --muted-foreground: oklch(0.50 0.020 38);
+  --placeholder: oklch(0.65 0.020 38);
+  --border: oklch(0.90 0.015 38);
+  --input: oklch(0.80 0.020 38);
+  --ring: oklch(0.55 0.12 38);
+  --primary: oklch(0.45 0.13 38);
+  --primary-foreground: oklch(0.99 0.005 38);
+  --primary-hover: oklch(0.40 0.13 38);
+  --primary-active: oklch(0.35 0.13 38);
+  --destructive: oklch(0.30 0.05 25);
+  --destructive-foreground: oklch(0.99 0.005 38);
+  --positive: oklch(0.30 0.05 130);
+  --positive-foreground: oklch(0.99 0.005 38);
+}
+
+.dark {
+  --background: oklch(0.14 0.012 38);
+  --foreground: oklch(0.95 0.010 38);
+  --card: oklch(0.19 0.014 38);
+  --card-foreground: oklch(0.95 0.010 38);
+  --muted: oklch(0.23 0.014 38);
+  --muted-foreground: oklch(0.75 0.015 38);
+  --placeholder: oklch(0.60 0.020 38);
+  --border: oklch(0.28 0.015 38);
+  --input: oklch(0.38 0.020 38);
+  --ring: oklch(0.65 0.13 38);
+  --primary: oklch(0.65 0.13 38);
+  --primary-foreground: oklch(0.14 0.012 38);
+  --primary-hover: oklch(0.70 0.13 38);
+  --primary-active: oklch(0.75 0.13 38);
+  --destructive: oklch(0.92 0.05 25);
+  --destructive-foreground: oklch(0.14 0.012 38);
+  --positive: oklch(0.92 0.05 130);
+  --positive-foreground: oklch(0.14 0.012 38);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  font-feature-settings: "tnum" 1;
 }
