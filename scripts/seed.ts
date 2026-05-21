@@ -34,14 +34,14 @@ async function main() {
   await pb.collection("_superusers").authWithPassword(adminEmail, adminPassword);
 
   // Ensure the users collection allows password auth for non-superusers.
-  // The committed schema ships with authRule="" (closed), which blocks all
-  // non-superuser login. For Phase 1's seed-then-login flow to work, the
-  // rule must be null (open) or a permissive expression.
-  const usersCollection = await pb.collections.getOne("users");
-  if (usersCollection.authRule !== null) {
-    await pb.collections.update("users", { authRule: null });
-    console.log("Patched users.authRule -> null (open password auth)");
-  }
+  // The committed schema ships with authRule="" (closed in PB terms),
+  // which blocks all non-superuser login. SDK update with null doesn't
+  // consistently round-trip; using a known-permissive expression instead.
+  const before = await pb.collections.getOne("users");
+  console.log(`users.authRule BEFORE patch: ${JSON.stringify(before.authRule)}`);
+  await pb.collections.update("users", { authRule: 'id != ""' });
+  const after = await pb.collections.getOne("users");
+  console.log(`users.authRule AFTER patch: ${JSON.stringify(after.authRule)}`);
 
   try {
     const existing = await pb
