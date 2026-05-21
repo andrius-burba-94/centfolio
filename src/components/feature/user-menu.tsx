@@ -1,5 +1,7 @@
 "use client";
 
+import { useTransition } from "react";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +25,14 @@ function getInitials(name: string, email: string): string {
 }
 
 export function UserMenu({ name, email }: { name: string; email: string }) {
+  const [pending, startTransition] = useTransition();
   const initials = getInitials(name, email);
+
+  function handleLogout() {
+    startTransition(async () => {
+      await logoutAction();
+    });
+  }
 
   return (
     <DropdownMenu>
@@ -39,17 +48,14 @@ export function UserMenu({ name, email }: { name: string; email: string }) {
           {email}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <form action={logoutAction}>
-          <DropdownMenuItem asChild>
-            <button
-              type="submit"
-              className="w-full text-left cursor-pointer"
-              data-testid="logout"
-            >
-              Log out
-            </button>
-          </DropdownMenuItem>
-        </form>
+        <DropdownMenuItem
+          onSelect={handleLogout}
+          disabled={pending}
+          data-testid="logout"
+          className="cursor-pointer"
+        >
+          {pending ? "Logging out" : "Log out"}
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
