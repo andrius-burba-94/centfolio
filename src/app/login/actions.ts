@@ -32,6 +32,8 @@ export async function loginAction(
 
   const pb = createServerClient();
   try {
+    // TODO(phase-1): debug log — remove before sign-off
+    console.log(`[login debug] email=${parsed.data.email} passwordLength=${parsed.data.password.length} pbUrl=${process.env.POCKETBASE_URL ?? "(default)"}`);
     await pb
       .collection("users")
       .authWithPassword(parsed.data.email, parsed.data.password);
