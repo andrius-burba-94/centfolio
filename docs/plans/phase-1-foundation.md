@@ -107,8 +107,12 @@ spec edits ride along (per grilling decision: planning is not its
 own gated PR).
 
 - Install `@sentry/nextjs` and `pino`
-- `sentry.client.config.ts`, `sentry.server.config.ts`,
-  `sentry.edge.config.ts`
+- `src/instrumentation.ts` (Next.js register hook +
+  `onRequestError`), `src/instrumentation-client.ts` (browser init),
+  `src/sentry.server.config.ts`, `src/sentry.edge.config.ts`
+  (the modern Sentry SDK ≥ 8.28 file layout, not the older
+  `sentry.client.config.ts` pattern)
+- `src/app/global-error.tsx` — App Router error boundary
 - `src/lib/log/pino.ts` — configured Pino instance
 - `src/lib/log/logError.ts` — helper wrapping Sentry capture +
   Pino write (this is the `log to Pino with context, rethrow a
