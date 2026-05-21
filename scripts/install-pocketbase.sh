@@ -45,9 +45,13 @@ echo "Downloading PocketBase $VERSION for $OS/$ARCH..."
 curl -fsSL -o "$TMPDIR/$ARCHIVE" "$RELEASE_URL/$ARCHIVE"
 
 echo "Verifying SHA256 checksum..."
-SHA256_FILE="${ARCHIVE}.sha256"
-curl -fsSL -o "$TMPDIR/$SHA256_FILE" "$RELEASE_URL/$SHA256_FILE"
-( cd "$TMPDIR" && sha256sum -c "$SHA256_FILE" )
+curl -fsSL -o "$TMPDIR/checksums.txt" "$RELEASE_URL/checksums.txt"
+EXPECTED="$(grep " $ARCHIVE\$" "$TMPDIR/checksums.txt" || true)"
+if [[ -z "$EXPECTED" ]]; then
+  echo "Archive $ARCHIVE not found in checksums.txt" >&2
+  exit 1
+fi
+( cd "$TMPDIR" && echo "$EXPECTED" | sha256sum -c - )
 
 echo "Extracting..."
 unzip -o -q "$TMPDIR/$ARCHIVE" -d "$TMPDIR/extract"
