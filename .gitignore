@@ -55,5 +55,9 @@ pocketbase/*.zip
 # Sentry build plugin local config (auth token, etc.)
 .env.sentry-build-plugin
 
+# /impeccable critique snapshots are session-local trend records.
+# ignore.md (the accepted-findings list) IS tracked; timestamps are not.
+.impeccable/critique/2*.md
+
 # Skills framework — .agents/ is the symlink target, restorable via `npx skills install`
 .agents/
