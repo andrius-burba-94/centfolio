@@ -52,5 +52,8 @@ scripts/seed-*.js
 *.log
 pocketbase/*.zip
 
+# Sentry build plugin local config (auth token, etc.)
+.env.sentry-build-plugin
+
 # Skills framework — .agents/ is the symlink target, restorable via `npx skills install`
 .agents/
