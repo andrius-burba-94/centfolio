@@ -1,0 +1,115 @@
+name: E2E
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: e2e-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+
+    env:
+      POCKETBASE_URL: http://127.0.0.1:8090
+      POCKETBASE_ADMIN_EMAIL: ci-admin@centfolio.test
+      POCKETBASE_ADMIN_PASSWORD: ci-admin-password-2026
+      SEED_USER_EMAIL: ci-user@centfolio.test
+      SEED_USER_PASSWORD: ci-user-password-2026
+      E2E_BASE_URL: http://127.0.0.1:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Install PocketBase binary
+        run: bash scripts/install-pocketbase.sh
+
+      - name: Create PocketBase superuser
+        run: |
+          ./pocketbase/pocketbase migrate up
+          ./pocketbase/pocketbase superuser upsert "$POCKETBASE_ADMIN_EMAIL" "$POCKETBASE_ADMIN_PASSWORD"
+
+      - name: Start PocketBase
+        run: |
+          ./pocketbase/pocketbase serve --http=127.0.0.1:8090 > pocketbase.log 2>&1 &
+          echo "PB_PID=$!" >> "$GITHUB_ENV"
+
+      - name: Wait for PocketBase
+        run: |
+          for i in {1..30}; do
+            if nc -z 127.0.0.1 8090; then
+              echo "PocketBase ready after $i second(s)."
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "PocketBase did not start within 30 seconds."
+          cat pocketbase.log || true
+          exit 1
+
+      - name: Seed test user
+        run: npm run seed
+
+      - name: Build Next.js
+        run: npm run build
+
+      - name: Start Next.js
+        run: |
+          npm run start -- --port 3000 > nextjs.log 2>&1 &
+          echo "NEXT_PID=$!" >> "$GITHUB_ENV"
+
+      - name: Wait for Next.js
+        run: |
+          for i in {1..60}; do
+            if nc -z 127.0.0.1 3000; then
+              echo "Next.js ready after $i second(s)."
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Next.js did not start within 60 seconds."
+          cat nextjs.log || true
+          exit 1
+
+      - name: Run Playwright tests
+        run: npx playwright test
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Upload server logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-logs
+          path: |
+            pocketbase.log
+            nextjs.log
+          retention-days: 7
+
+      - name: Stop background processes
+        if: always()
+        run: |
+          [ -n "${PB_PID:-}" ] && kill "$PB_PID" 2>/dev/null || true
+          [ -n "${NEXT_PID:-}" ] && kill "$NEXT_PID" 2>/dev/null || true
