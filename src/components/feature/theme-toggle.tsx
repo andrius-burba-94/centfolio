@@ -29,7 +29,11 @@ export function ThemeToggle() {
           <Icon className="size-[18px]" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-32">
+      <DropdownMenuContent
+        align="end"
+        className="min-w-32"
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
         <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
           <DropdownMenuRadioItem value="system" data-testid="theme-system">
             System
