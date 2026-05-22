@@ -177,7 +177,7 @@
       "CREATE UNIQUE INDEX `idx_email__pb_users_auth_` ON `users` (`email`) WHERE `email` != ''"
     ],
     "system": false,
-    "authRule": "",
+    "authRule": "id != \"\"",
     "manageRule": null,
     "authAlert": {
       "enabled": true,

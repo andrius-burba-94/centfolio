@@ -11,7 +11,9 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "setup": "bash scripts/install-pocketbase.sh",
+    "ci:e2e": "bash scripts/ci-e2e.sh",
+    "setup": "bash scripts/install-pocketbase.sh && git config core.hooksPath .githooks",
+    "setup:hooks": "git config core.hooksPath .githooks",
     "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
