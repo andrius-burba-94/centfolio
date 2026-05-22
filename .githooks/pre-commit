@@ -22,16 +22,21 @@ fi
 violations=()
 while IFS= read -r file; do
   [[ -z "$file" || ! -f "$file" ]] && continue
-  if grep -l "$EMDASH" "$file" >/dev/null 2>&1; then
+  # Only check lines being ADDED in this commit (diff lines starting
+  # with `+` excluding the `+++` header). Pre-existing em dashes from
+  # before the hook was installed are left alone; the hook only
+  # prevents NEW violations.
+  added_lines="$(git diff --cached -- "$file" | grep '^+' | grep -v '^+++')"
+  if echo "$added_lines" | grep -q "$EMDASH"; then
     violations+=("$file")
   fi
 done <<< "$files"
 
 if [[ ${#violations[@]} -gt 0 ]]; then
-  echo "Pre-commit: em-dash character found in staged files:" >&2
+  echo "Pre-commit: em-dash character found in lines added by this commit:" >&2
   for f in "${violations[@]}"; do
     echo "  $f" >&2
-    grep -n "$EMDASH" "$f" | sed 's/^/      /' >&2
+    git diff --cached -- "$f" | grep '^+' | grep -v '^+++' | grep -n "$EMDASH" | sed 's/^/      /' >&2
   done
   echo "" >&2
   echo "Replace with comma, colon, semicolon, period, or parentheses." >&2
