@@ -222,8 +222,12 @@ shadcn ecosystem compose without retokenizing. Custom additions
 | `foreground` | `--foreground` | `text-foreground` | Primary reading text |
 | `card` | `--card` | `bg-card` | Card and toast containers |
 | `card-foreground` | `--card-foreground` | `text-card-foreground` | Text on cards (same value as `foreground`) |
+| `popover` | `--popover` | `bg-popover` | Floating surfaces (dropdowns, popovers). **Alias of `card`** for shadcn-ecosystem compat. Same value, different name. |
+| `popover-foreground` | `--popover-foreground` | `text-popover-foreground` | Text on `popover`. Alias of `card-foreground`. |
 | `muted` | `--muted` | `bg-muted` | Hover and selected backgrounds, initials-circle bg |
 | `muted-foreground` | `--muted-foreground` | `text-muted-foreground` | Captions, helper text, ghost-button label |
+| `accent` | `--accent` | `bg-accent` | shadcn-ecosystem hover/selected bg. **Alias of `muted`** for primitives that ship with `bg-accent` (dropdown items, etc.). |
+| `accent-foreground` | `--accent-foreground` | `text-accent-foreground` | Text on `accent`. Alias of `foreground`. |
 | `placeholder` | `--placeholder` | `text-placeholder` | Form placeholders, disabled text |
 | `border` | `--border` | `border` (default border color) | Subtle dividers, hover-card border |
 | `input` | `--input` | `border-input` | Input borders at rest |
@@ -554,6 +558,27 @@ side-stripe accent borders are banned by the absolute bans below.
 - **Element:** `<span>` in Phase 1; `<Link href="/dashboard">` from
   Phase 2.
 
+### Dropdown menu
+
+A floating menu used by Theme toggle and User menu. Scaffolded from
+shadcn's `dropdown-menu` primitive and token-aligned to the system.
+
+- **Container:** `bg-popover` (alias of `card`), `rounded-md`,
+  `lifted-floating` shadow, 1px `border`, 8px padding, `min-width 8rem`.
+- **Item:** `rounded-sm`, 8px 12px padding, `text-label`
+  typography, `foreground` text. Hover and keyboard-focus background:
+  `accent` (alias of `muted`). Selected/`data-state=open`:
+  `accent` background.
+- **Separator:** 1px `border`, full-width, `my-1` vertical margin.
+- **Label (non-interactive header):** 8px 12px padding,
+  `text-label` typography, `muted-foreground` color.
+- **Radio item:** standard item layout with a 16px terracotta
+  (`ring`-color) check on the right when selected.
+
+Interactive items support keyboard navigation via Radix's built-in
+roving tabindex; no per-item focus ring needed (the row-level
+`accent` background is the focus indicator).
+
 ### Theme toggle
 
 A Ghost button with a Lucide icon, opening a dropdown.
@@ -585,6 +610,13 @@ determines another form serves the design better.
   `rounded-md`, 8px padding, min-width 160px).
 - **Dropdown item (Logout):** 8px 12px padding, body typography,
   `foreground`. Hover background `muted`.
+- **Logout interaction pattern:** the item calls a server action via
+  `onSelect={() => startTransition(() => logoutAction())}`, not via
+  a `<form action>` wrapping the item. Radix `DropdownMenuItem`
+  closes the menu on pointer-down, which unmounts a wrapped form
+  before its submit handler fires. The `onSelect` + `useTransition`
+  pattern is the right shape for any destructive action inside a
+  dropdown.
 
 ### Named Rules
 
