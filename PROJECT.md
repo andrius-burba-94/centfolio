@@ -89,12 +89,18 @@ execution breakdown.
 - Add, edit, delete transactions
 - Categories (hierarchical: Food > Groceries) — user-creatable, with sensible defaults
 - Tags (multiple per transaction) — user-creatable, autocomplete
-- Rule engine for merchant → category mapping (e.g., "Maxima" → Food > Groceries)
 - Filtering and search
 
+The rule engine for merchant → category mapping moves to Phase 4
+where it auto-categorizes synced transactions. Rationale: rules earn
+their keep when there are many transactions to auto-classify; for
+Phase 2's manual flow, manual categorization works fine and the
+rule-engine surface is not yet load-bearing.
+
 **Success criteria**: A user can record every cash and card purchase
-manually, classify it, and find any past transaction in under three clicks.
-Rules apply correctly to manually-entered transactions matching the rule's merchant.
+manually, classify it, and find any past transaction in under three
+clicks. See `docs/plans/phase-2-transactions.md` for the execution
+breakdown.
 
 ### Phase 3 — Receipts
 **Goal**: A photographed receipt becomes structured data.
@@ -119,6 +125,10 @@ is correctable in under a minute.
 - Daily cron sync (deduplicated by external transaction ID)
 - Re-consent flow before the 90-day window expires
 - Manual sync trigger
+- Rule engine for merchant → category mapping (e.g., "Maxima" → Food >
+  Groceries). User-defined rules; CRUD UI; applied on sync and on
+  manual transaction entry. Moved from Phase 2 where the surface
+  doubled the scope without yet earning its keep.
 - **Rules-first then AI-assisted categorization.** Synced transactions
   are categorized by user-defined rules first; unmatched ones get an AI
   suggestion via Gemini against the user's existing category list.
