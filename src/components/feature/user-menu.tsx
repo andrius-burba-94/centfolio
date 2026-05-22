@@ -43,7 +43,11 @@ export function UserMenu({ name, email }: { name: string; email: string }) {
       >
         <span aria-hidden="true">{initials}</span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-44">
+      <DropdownMenuContent
+        align="end"
+        className="min-w-44"
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
         <DropdownMenuLabel className="text-muted-foreground font-normal">
           {email}
         </DropdownMenuLabel>
