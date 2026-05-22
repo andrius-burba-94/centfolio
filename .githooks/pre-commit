@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Pre-commit hook: prevent em-dash characters in staged files.
+#
+# DESIGN.md and PRODUCT.md both prohibit em dashes in copy. This
+# hook enforces it mechanically so the rule does not depend on
+# self-vigilance during writing (which Phase 1 demonstrated does
+# not scale).
+#
+# To bypass in an emergency: git commit --no-verify (use sparingly).
+
+set -e
+
+# Construct the em-dash character (U+2014) at runtime so this file's
+# source stays ASCII-only and does not trip its own check.
+EMDASH="$(printf '\xe2\x80\x94')"
+
+files="$(git diff --cached --name-only --diff-filter=ACMR)"
+if [[ -z "$files" ]]; then
+  exit 0
+fi
+
+violations=()
+while IFS= read -r file; do
+  [[ -z "$file" || ! -f "$file" ]] && continue
+  if grep -l "$EMDASH" "$file" >/dev/null 2>&1; then
+    violations+=("$file")
+  fi
+done <<< "$files"
+
+if [[ ${#violations[@]} -gt 0 ]]; then
+  echo "Pre-commit: em-dash character found in staged files:" >&2
+  for f in "${violations[@]}"; do
+    echo "  $f" >&2
+    grep -n "$EMDASH" "$f" | sed 's/^/      /' >&2
+  done
+  echo "" >&2
+  echo "Replace with comma, colon, semicolon, period, or parentheses." >&2
+  echo "(DESIGN.md Don't list, AGENTS.md plain-language rule.)" >&2
+  echo "" >&2
+  echo "To bypass (rare): git commit --no-verify" >&2
+  exit 1
+fi
+
+exit 0
