@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +14,10 @@ import {
 } from "@/components/ui/table";
 import type { Category } from "@/lib/categories/types";
 import type { Tag } from "@/lib/tags/types";
+import {
+  deleteTransaction,
+  undoDeleteTransaction,
+} from "@/lib/transactions/actions";
 import type { Transaction } from "@/lib/transactions/types";
 
 import { TransactionRow } from "./transaction-row";
@@ -21,6 +29,8 @@ type Props = {
   tags: Tag[];
 };
 
+const UNDO_WINDOW_MS = 5000;
+
 export function TransactionsView({
   transactions,
   totalItems,
@@ -29,6 +39,67 @@ export function TransactionsView({
 }: Props) {
   const categoriesById = new Map(categories.map((c) => [c.id, c]));
   const tagsById = new Map(tags.map((t) => [t.id, t]));
+
+  const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [, startTransition] = useTransition();
+
+  function markPending(id: string) {
+    setPendingDeleteIds((s) => {
+      const next = new Set(s);
+      next.add(id);
+      return next;
+    });
+  }
+
+  function clearPending(id: string) {
+    setPendingDeleteIds((s) => {
+      const next = new Set(s);
+      next.delete(id);
+      return next;
+    });
+  }
+
+  function handleDelete(tx: Transaction) {
+    markPending(tx.id);
+    startTransition(async () => {
+      const result = await deleteTransaction({ id: tx.id });
+      if (!result.ok) {
+        clearPending(tx.id);
+        toast.error(result.error);
+        return;
+      }
+      toast("Transaction deleted.", {
+        action: {
+          label: "Undo",
+          onClick: () => {
+            startTransition(async () => {
+              const undo = await undoDeleteTransaction({
+                id: tx.id,
+                merchantName: tx.merchantName,
+                amount: tx.amount,
+                date: tx.date,
+                description: tx.description,
+                notes: tx.notes,
+                categoryId: tx.categoryId,
+                tagIds: tx.tagIds,
+              });
+              if (undo.ok) {
+                clearPending(tx.id);
+                toast.success("Transaction restored.");
+              } else {
+                toast.error(undo.error);
+              }
+            });
+          },
+        },
+        duration: UNDO_WINDOW_MS,
+      });
+    });
+  }
+
+  const visible = transactions.filter((t) => !pendingDeleteIds.has(t.id));
 
   return (
     <section className="flex flex-1 flex-col gap-8 px-8 py-8">
@@ -40,7 +111,10 @@ export function TransactionsView({
           >
             Transactions
           </h1>
-          <p className="mt-1 text-label text-muted-foreground" data-testid="page-meta">
+          <p
+            className="mt-1 text-label text-muted-foreground"
+            data-testid="page-meta"
+          >
             {totalItems === 0
               ? "No transactions yet."
               : `${totalItems} transaction${totalItems === 1 ? "" : "s"}.`}
@@ -51,7 +125,7 @@ export function TransactionsView({
         </Button>
       </div>
 
-      {transactions.length === 0 ? (
+      {visible.length === 0 ? (
         <EmptyState />
       ) : (
         <div
@@ -79,15 +153,17 @@ export function TransactionsView({
                 <TableHead className="px-6 py-4 text-right text-label text-muted-foreground">
                   Amount
                 </TableHead>
+                <TableHead className="w-12 px-6 py-4" aria-label="Row actions" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {transactions.map((tx) => (
+              {visible.map((tx) => (
                 <TransactionRow
                   key={tx.id}
                   transaction={tx}
                   categoriesById={categoriesById}
                   tagsById={tagsById}
+                  onDelete={() => handleDelete(tx)}
                 />
               ))}
             </TableBody>
@@ -116,4 +192,3 @@ function EmptyState() {
     </div>
   );
 }
-

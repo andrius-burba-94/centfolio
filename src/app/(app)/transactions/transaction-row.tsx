@@ -1,5 +1,6 @@
 "use client";
 
+import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -17,9 +18,15 @@ type Props = {
   transaction: Transaction;
   categoriesById: Map<string, Category>;
   tagsById: Map<string, Tag>;
+  onDelete: () => void;
 };
 
-export function TransactionRow({ transaction, categoriesById, tagsById }: Props) {
+export function TransactionRow({
+  transaction,
+  categoriesById,
+  tagsById,
+  onDelete,
+}: Props) {
   const router = useRouter();
   const isSpent = transaction.amount < 0;
 
@@ -34,6 +41,11 @@ export function TransactionRow({ transaction, categoriesById, tagsById }: Props)
     }
   }
 
+  function handleDeleteClick(e: React.MouseEvent) {
+    e.stopPropagation();
+    onDelete();
+  }
+
   return (
     <TableRow
       onClick={open}
@@ -41,7 +53,7 @@ export function TransactionRow({ transaction, categoriesById, tagsById }: Props)
       tabIndex={0}
       role="button"
       aria-label={`Edit transaction ${transaction.merchantName}`}
-      className="cursor-pointer border-border outline-none focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+      className="group/row cursor-pointer border-border outline-none focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
       data-testid={`transaction-row-${transaction.id}`}
     >
       <TableCell className="px-6 py-4 text-body text-muted-foreground">
@@ -67,6 +79,17 @@ export function TransactionRow({ transaction, categoriesById, tagsById }: Props)
       >
         {!isSpent ? "+" : ""}
         {formatMoney(transaction.amount)}
+      </TableCell>
+      <TableCell className="px-2 py-4">
+        <button
+          type="button"
+          onClick={handleDeleteClick}
+          aria-label={`Delete transaction ${transaction.merchantName}`}
+          className="inline-flex size-8 items-center justify-center rounded-sm text-muted-foreground opacity-0 transition-opacity group-hover/row:opacity-100 hover:bg-muted hover:text-destructive focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+          data-testid={`transaction-delete-${transaction.id}`}
+        >
+          <Trash2 className="size-4" />
+        </button>
       </TableCell>
     </TableRow>
   );
