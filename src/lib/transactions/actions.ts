@@ -13,7 +13,7 @@ import { toTransaction } from "./record";
 import type { Transaction } from "./types";
 
 const baseFields = {
-  merchantName: z.string().trim().min(1).max(200),
+  payee: z.string().trim().min(1).max(200),
   amount: z.number().int(),
   date: z.string().min(1),
   description: z.string().trim().max(200).optional().default(""),
@@ -30,7 +30,7 @@ type ValidatedFields = z.infer<typeof createSchema>;
 
 function buildPayload(input: ValidatedFields, userId: string) {
   const payload: Record<string, unknown> = {
-    merchantName: input.merchantName,
+    payee: input.payee,
     amount: input.amount,
     date: input.date,
     description: input.description ?? "",
@@ -45,7 +45,7 @@ function buildPayload(input: ValidatedFields, userId: string) {
 }
 
 export type CreateTransactionInput = {
-  merchantName: string;
+  payee: string;
   amount: number;
   date: string;
   description?: string;

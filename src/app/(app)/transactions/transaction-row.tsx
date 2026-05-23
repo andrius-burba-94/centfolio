@@ -52,7 +52,7 @@ export function TransactionRow({
       onKeyDown={onKeyDown}
       tabIndex={0}
       role="button"
-      aria-label={`Edit transaction ${transaction.merchantName}`}
+      aria-label={`Edit transaction ${transaction.payee}`}
       className="group/row cursor-pointer border-border outline-none focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
       data-testid={`transaction-row-${transaction.id}`}
     >
@@ -60,7 +60,7 @@ export function TransactionRow({
         {formatTransactionDate(transaction.date)}
       </TableCell>
       <TableCell className="px-6 py-4 text-body text-foreground">
-        {transaction.merchantName}
+        {transaction.payee}
       </TableCell>
       <TableCell className="px-6 py-4 text-body text-muted-foreground">
         {transaction.description}
@@ -84,7 +84,7 @@ export function TransactionRow({
         <button
           type="button"
           onClick={handleDeleteClick}
-          aria-label={`Delete transaction ${transaction.merchantName}`}
+          aria-label={`Delete transaction ${transaction.payee}`}
           className="inline-flex size-8 items-center justify-center rounded-sm text-muted-foreground opacity-0 transition-opacity group-hover/row:opacity-100 hover:bg-muted hover:text-destructive focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
           data-testid={`transaction-delete-${transaction.id}`}
         >

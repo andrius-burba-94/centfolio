@@ -46,6 +46,7 @@ project-specific terms locked. Match them exactly.
 | Spent | Outflow, debit, expense |
 | Earned | Inflow, credit, income |
 | Held | AUM, balance, equity |
+| Payee | Merchant, vendor, party (transactions only; receipts keep `merchant`) |
 | Categorize | Classify, tag (tag means something else) |
 | Match | Link, attach, associate |
 | Sync | Pull, fetch, refresh (when about bank data) |

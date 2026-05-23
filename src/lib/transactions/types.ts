@@ -2,7 +2,7 @@ export type Transaction = {
   id: string;
   amount: number;
   date: string;
-  merchantName: string;
+  payee: string;
   description: string;
   notes: string;
   categoryId: string | null;

@@ -38,7 +38,7 @@ type SheetProps = {
 };
 
 type FormState = {
-  merchantName: string;
+  payee: string;
   amountInput: string;
   direction: "spent" | "earned";
   date: string;
@@ -54,7 +54,7 @@ function todayIso(): string {
 
 function emptyForm(): FormState {
   return {
-    merchantName: "",
+    payee: "",
     amountInput: "",
     direction: "spent",
     date: todayIso(),
@@ -67,7 +67,7 @@ function emptyForm(): FormState {
 
 function formFromTransaction(tx: Transaction): FormState {
   return {
-    merchantName: tx.merchantName,
+    payee: tx.payee,
     amountInput: formatMoney(Math.abs(tx.amount), { withCurrency: false }),
     direction: tx.amount < 0 ? "spent" : "earned",
     date: tx.date.slice(0, 10),
@@ -141,8 +141,8 @@ function TransactionForm({
     event.preventDefault();
     setAmountError(null);
 
-    const merchantName = form.merchantName.trim();
-    if (!merchantName) return;
+    const payee = form.payee.trim();
+    if (!payee) return;
 
     const parsedAbs = parseMoney(form.amountInput);
     if (parsedAbs === null || parsedAbs <= 0) {
@@ -154,7 +154,7 @@ function TransactionForm({
 
     startTransition(async () => {
       const payload = {
-        merchantName,
+        payee,
         amount: signedAmount,
         date: form.date,
         description: form.description.trim(),
@@ -206,18 +206,18 @@ function TransactionForm({
               data-testid="tx-date-input"
             />
           </Field>
-          <Field className="flex-1" id="tx-merchant" label="Merchant">
+          <Field className="flex-1" id="tx-payee" label="Payee">
             <Input
-              id="tx-merchant"
+              id="tx-payee"
               type="text"
-              value={form.merchantName}
+              value={form.payee}
               onChange={(e) =>
-                setForm((s) => ({ ...s, merchantName: e.target.value }))
+                setForm((s) => ({ ...s, payee: e.target.value }))
               }
               placeholder="Maxima"
               maxLength={200}
               required
-              data-testid="tx-merchant-input"
+              data-testid="tx-payee-input"
             />
           </Field>
         </div>

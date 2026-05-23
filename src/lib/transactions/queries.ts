@@ -20,7 +20,7 @@ function buildFilter(userId: string, filters: TransactionFilters): string {
   if (filters.q?.trim()) {
     const q = escapeFilterValue(filters.q.trim());
     parts.push(
-      `(merchantName ~ '${q}' || description ~ '${q}' || notes ~ '${q}')`,
+      `(payee ~ '${q}' || description ~ '${q}' || notes ~ '${q}')`,
     );
   }
 
@@ -76,22 +76,22 @@ export async function getTransaction(id: string): Promise<Transaction | null> {
   }
 }
 
-export async function listMerchants(): Promise<string[]> {
+export async function listPayees(): Promise<string[]> {
   const { pb, user } = await requireAuthenticatedPb();
   const records = await pb.collection("transactions").getFullList({
     filter: `userId = '${user.id}'`,
-    fields: "merchantName,created",
+    fields: "payee,created",
     sort: "-created",
   });
   const seen = new Set<string>();
-  const merchants: string[] = [];
+  const payees: string[] = [];
   for (const r of records) {
-    const name = String(r.merchantName);
+    const name = String(r.payee);
     const key = name.toLowerCase();
     if (!seen.has(key)) {
       seen.add(key);
-      merchants.push(name);
+      payees.push(name);
     }
   }
-  return merchants;
+  return payees;
 }

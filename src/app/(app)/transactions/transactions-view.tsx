@@ -90,7 +90,7 @@ export function TransactionsView({
             startTransition(async () => {
               const undo = await undoDeleteTransaction({
                 id: tx.id,
-                merchantName: tx.merchantName,
+                payee: tx.payee,
                 amount: tx.amount,
                 date: tx.date,
                 description: tx.description,
@@ -158,7 +158,7 @@ export function TransactionsView({
                   Date
                 </TableHead>
                 <TableHead className="px-6 py-4 text-label text-muted-foreground">
-                  Merchant
+                  Payee
                 </TableHead>
                 <TableHead className="px-6 py-4 text-label text-muted-foreground">
                   Description

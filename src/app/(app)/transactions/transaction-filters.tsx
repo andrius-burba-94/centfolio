@@ -117,7 +117,7 @@ export function TransactionFilters({ initial, categories, tags }: Props) {
           type="search"
           value={q}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search merchant, description, notes"
+          placeholder="Search payee, description, notes"
           className="pl-9"
           data-testid="transaction-search"
         />

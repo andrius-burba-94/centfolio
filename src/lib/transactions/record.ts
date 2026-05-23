@@ -8,7 +8,7 @@ export function toTransaction(r: RecordModel): Transaction {
     id: String(r.id),
     amount: Number(r.amount),
     date: String(r.date),
-    merchantName: String(r.merchantName),
+    payee: String(r.payee),
     description: r.description ? String(r.description) : "",
     notes: r.notes ? String(r.notes) : "",
     categoryId: r.categoryId ? String(r.categoryId) : null,
