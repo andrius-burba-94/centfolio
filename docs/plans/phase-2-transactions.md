@@ -119,7 +119,10 @@ primitives so they land before any feature work depends on them.
   - `sheet` (slide-in panel for add/edit form)
   - `table` (default list rendering)
   - `skeleton` (loading state)
-  - `combobox` (single + multi variants for categories and tags)
+  - Combobox: assembled in feature code from `command` + `popover`
+    primitives; shadcn does not ship a combobox primitive directly.
+    `CategoryCombobox` is single-select with inline-create-as-top-level;
+    `TagCombobox` is multi-select with chips.
 - Token-align each new primitive per the PR 17 pattern. Strip
   unused variants, replace stale token names if shadcn defaults
   use shadcn-ecosystem aliases not in our system.

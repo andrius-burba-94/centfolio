@@ -1,8 +1,9 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import type PocketBase from "pocketbase";
-import type { RecordModel } from "pocketbase";
+import PocketBase, { type RecordModel } from "pocketbase";
+
+import { createServerClient } from "@/lib/pocketbase/server";
 
 export const SESSION_COOKIE = "pb_auth";
 
@@ -56,6 +57,32 @@ export async function requireUser(): Promise<SessionUser> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   return user;
+}
+
+export async function requireAuthenticatedPb(): Promise<{
+  pb: PocketBase;
+  user: SessionUser;
+}> {
+  const cookieStore = await cookies();
+  const cookieValue = cookieStore.get(SESSION_COOKIE)?.value;
+  if (!cookieValue) redirect("/login");
+
+  const session = parseSession(cookieValue);
+  if (!session) redirect("/login");
+
+  const pb = createServerClient();
+  pb.authStore.save(session.token, session.record);
+
+  if (!pb.authStore.isValid) redirect("/login");
+
+  const user: SessionUser = {
+    id: String(session.record.id),
+    email: String(session.record.email ?? ""),
+    name: String(session.record.name ?? ""),
+    role: (session.record.role as "user" | "admin") ?? "user",
+  };
+
+  return { pb, user };
 }
 
 export async function persistAuthCookie(pb: PocketBase): Promise<void> {
