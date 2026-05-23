@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { requireAuthenticatedPb } from "@/lib/auth/session";
 import { logError } from "@/lib/log/logError";
+import { pbErrorMessage } from "@/lib/pocketbase/error";
 
 export type ActionResult<T = void> =
   | { ok: true; data?: T }
@@ -66,7 +67,10 @@ export async function createCategory(input: {
     return { ok: true, data: { id: String(created.id) } };
   } catch (err) {
     logError(err, { action: "createCategory", userId: user.id });
-    return { ok: false, error: "Failed to create category." };
+    return {
+      ok: false,
+      error: pbErrorMessage(err, "Failed to create category."),
+    };
   }
 }
 
@@ -101,7 +105,10 @@ export async function updateCategory(input: {
       userId: user.id,
       categoryId: parsed.data.id,
     });
-    return { ok: false, error: "Failed to update category." };
+    return {
+      ok: false,
+      error: pbErrorMessage(err, "Failed to update category."),
+    };
   }
 }
 
@@ -169,6 +176,9 @@ export async function deleteCategory(input: {
       userId: user.id,
       categoryId: parsed.data.id,
     });
-    return { ok: false, error: "Failed to delete category." };
+    return {
+      ok: false,
+      error: pbErrorMessage(err, "Failed to delete category."),
+    };
   }
 }
