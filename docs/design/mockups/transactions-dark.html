@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Centfolio transactions, dark mode</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --background: oklch(0.14 0.012 38);
+      --foreground: oklch(0.95 0.010 38);
+      --card: oklch(0.19 0.014 38);
+      --muted: oklch(0.23 0.014 38);
+      --muted-foreground: oklch(0.75 0.015 38);
+      --placeholder: oklch(0.60 0.020 38);
+      --border: oklch(0.28 0.015 38);
+      --input: oklch(0.38 0.020 38);
+      --ring: oklch(0.65 0.13 38);
+      --primary: oklch(0.65 0.13 38);
+      --primary-foreground: oklch(0.14 0.012 38);
+      --destructive: oklch(0.92 0.05 25);
+      --positive: oklch(0.92 0.05 130);
+      --overlay: oklch(0.14 0.012 38 / 0.5);
+      --shadow-lifted-floating: 0 8px 24px -8px oklch(0.55 0.12 38 / 0.18);
+      --font-display: "Fraunces", Georgia, serif;
+      --font-sans: "Inter", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-feature-settings: "tnum" 1; }
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: var(--font-sans);
+      font-size: 17px;
+      line-height: 1.60;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 32px;
+      height: 64px;
+    }
+    .wordmark {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: 22px;
+      line-height: 1.20;
+      letter-spacing: -0.005em;
+      color: var(--foreground);
+    }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-link {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      color: var(--muted-foreground);
+      text-decoration: none;
+    }
+    .nav-link.active { color: var(--foreground); }
+    .top-bar-right { display: flex; align-items: center; gap: 12px; }
+    .icon-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background-color: transparent;
+      color: var(--muted-foreground);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .initials-circle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background-color: var(--muted);
+      color: var(--foreground);
+      border: none;
+      border-radius: 9999px;
+      font-weight: 500;
+      font-size: 14px;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      gap: 32px;
+      padding: 24px 32px;
+    }
+    .list-pane { flex: 1; min-width: 0; position: relative; }
+    .list-pane::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-color: var(--overlay);
+      pointer-events: none;
+    }
+    .sheet-pane {
+      width: 420px;
+      background-color: var(--card);
+      border-left: 1px solid var(--border);
+      box-shadow: var(--shadow-lifted-floating);
+      padding: 24px;
+      align-self: stretch;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .page-title {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: 30px;
+      line-height: 1.20;
+      color: var(--foreground);
+    }
+    .page-meta {
+      font-size: 14px;
+      color: var(--muted-foreground);
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      max-width: 320px;
+      padding: 10px 14px;
+      border: 1px solid var(--input);
+      border-radius: 4px;
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: var(--font-sans);
+      font-size: 17px;
+      outline: none;
+    }
+    .search-input::placeholder { color: var(--placeholder); }
+    .filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border: 1px solid var(--input);
+      border-radius: 4px;
+      background-color: transparent;
+      color: var(--muted-foreground);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+    }
+    .filter-pill.active {
+      color: var(--foreground);
+      border-color: var(--ring);
+    }
+    .filter-pill .count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 6px;
+      border-radius: 9999px;
+      background-color: var(--muted);
+      color: var(--foreground);
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .primary-button {
+      padding: 12px 20px;
+      background-color: var(--primary);
+      color: var(--primary-foreground);
+      border: none;
+      border-radius: 4px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      margin-left: auto;
+    }
+    .ghost-button {
+      padding: 8px 12px;
+      background-color: transparent;
+      color: var(--muted-foreground);
+      border: none;
+      border-radius: 4px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+    }
+
+    .table-card {
+      background-color: var(--card);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead th {
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      color: var(--muted-foreground);
+      border-bottom: 1px solid var(--border);
+    }
+    thead th.numeric { text-align: right; }
+    tbody td {
+      padding: 14px 16px;
+      color: var(--foreground);
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background-color: var(--muted); cursor: pointer; }
+    .col-date { color: var(--foreground); white-space: nowrap; }
+    .col-merchant { font-weight: 500; }
+    .col-description { color: var(--muted-foreground); }
+    .col-category { color: var(--foreground); white-space: nowrap; }
+    .tags { display: inline-flex; gap: 6px; }
+    .tag-chip {
+      padding: 2px 8px;
+      background-color: var(--muted);
+      color: var(--muted-foreground);
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .col-amount {
+      text-align: right;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .amount-spent { color: var(--destructive); }
+    .amount-earned { color: var(--positive); }
+
+    .sheet-title {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: 22px;
+      line-height: 1.20;
+      color: var(--foreground);
+      margin-bottom: 8px;
+    }
+    .sheet-description {
+      font-size: 14px;
+      color: var(--muted-foreground);
+      margin-bottom: 24px;
+    }
+    .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .form-row.split { flex-direction: row; gap: 12px; }
+    .form-row.split .form-col { flex: 1; }
+    .form-col { display: flex; flex-direction: column; gap: 6px; }
+    label {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      color: var(--muted-foreground);
+    }
+    .form-input, .form-textarea {
+      padding: 10px 14px;
+      border: 1px solid var(--input);
+      border-radius: 4px;
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: var(--font-sans);
+      font-size: 17px;
+      outline: none;
+    }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--placeholder); }
+    .form-textarea { resize: vertical; min-height: 60px; }
+    .amount-group { display: flex; gap: 8px; }
+    .sign-toggle {
+      display: inline-flex;
+      align-items: stretch;
+      border: 1px solid var(--input);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .sign-option {
+      padding: 10px 14px;
+      background-color: transparent;
+      color: var(--muted-foreground);
+      border: none;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+    }
+    .sign-option.active {
+      background-color: var(--muted);
+      color: var(--foreground);
+      border-bottom: 2px solid var(--ring);
+    }
+    .combobox-trigger {
+      padding: 10px 14px;
+      border: 1px solid var(--input);
+      border-radius: 4px;
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: var(--font-sans);
+      font-size: 17px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .combobox-trigger.empty { color: var(--placeholder); }
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+      justify-content: flex-end;
+    }
+  </style>
+</head>
+<body>
+  <header class="top-bar">
+    <div style="display:flex;align-items:center;gap:32px;">
+      <span class="wordmark">Centfolio</span>
+      <nav class="nav-links">
+        <a href="#" class="nav-link">Dashboard</a>
+        <a href="#" class="nav-link active">Transactions</a>
+      </nav>
+    </div>
+    <div class="top-bar-right">
+      <button class="icon-button" type="button" aria-label="Theme: dark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+        </svg>
+      </button>
+      <button class="initials-circle" type="button" aria-label="Account menu">AB</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <section class="list-pane">
+      <div class="page-header">
+        <h1 class="page-title">Transactions</h1>
+        <span class="page-meta">5 transactions this month</span>
+      </div>
+
+      <div class="filter-bar">
+        <input class="search-input" type="search" placeholder="Search merchant, description, notes">
+        <button class="filter-pill" type="button">Last 30 days</button>
+        <button class="filter-pill active" type="button">
+          Category <span class="count">2</span>
+        </button>
+        <button class="filter-pill" type="button">Tag</button>
+        <button class="primary-button" type="button">Add transaction</button>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Merchant</th>
+              <th>Description</th>
+              <th>Category</th>
+              <th>Tags</th>
+              <th class="numeric">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-date">22 May</td>
+              <td class="col-merchant">Maxima</td>
+              <td class="col-description">weekly run</td>
+              <td class="col-category">Food, Groceries</td>
+              <td><span class="tags"><span class="tag-chip">grocery</span></span></td>
+              <td class="col-amount amount-spent">−34,27 €</td>
+            </tr>
+            <tr>
+              <td class="col-date">21 May</td>
+              <td class="col-merchant">Salary</td>
+              <td class="col-description">May salary</td>
+              <td class="col-category">Income, Salary</td>
+              <td></td>
+              <td class="col-amount amount-earned">+2.500,00 €</td>
+            </tr>
+            <tr>
+              <td class="col-date">20 May</td>
+              <td class="col-merchant">Bolt</td>
+              <td class="col-description">airport ride</td>
+              <td class="col-category">Transport, Public</td>
+              <td><span class="tags"><span class="tag-chip">work</span></span></td>
+              <td class="col-amount amount-spent">−12,80 €</td>
+            </tr>
+            <tr>
+              <td class="col-date">19 May</td>
+              <td class="col-merchant">LIDL</td>
+              <td class="col-description">snacks</td>
+              <td class="col-category">Food, Groceries</td>
+              <td></td>
+              <td class="col-amount amount-spent">−8,45 €</td>
+            </tr>
+            <tr>
+              <td class="col-date">18 May</td>
+              <td class="col-merchant">Spotify</td>
+              <td class="col-description">family plan</td>
+              <td class="col-category">Bills, Subscriptions</td>
+              <td><span class="tags"><span class="tag-chip">recurring</span></span></td>
+              <td class="col-amount amount-spent">−15,00 €</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <aside class="sheet-pane">
+      <h2 class="sheet-title">New transaction</h2>
+      <p class="sheet-description">Record income or spending.</p>
+
+      <div class="form-row split">
+        <div class="form-col">
+          <label for="date">Date</label>
+          <input class="form-input" id="date" type="date" value="2026-05-22">
+        </div>
+        <div class="form-col">
+          <label for="merchant">Merchant</label>
+          <input class="form-input" id="merchant" type="text" placeholder="Maxima">
+        </div>
+      </div>
+
+      <div class="form-row split">
+        <div class="form-col">
+          <label>Direction</label>
+          <div class="sign-toggle">
+            <button class="sign-option active spent" type="button">Spent</button>
+            <button class="sign-option earned" type="button">Earned</button>
+          </div>
+        </div>
+        <div class="form-col">
+          <label for="amount">Amount</label>
+          <input class="form-input" id="amount" type="text" placeholder="34,27">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label for="description">Description</label>
+        <input class="form-input" id="description" type="text" placeholder="weekly run">
+      </div>
+
+      <div class="form-row">
+        <label for="category">Category</label>
+        <button class="combobox-trigger empty" id="category" type="button">
+          <span>Choose a category</span>
+          <span aria-hidden="true">▾</span>
+        </button>
+      </div>
+
+      <div class="form-row">
+        <label for="tags">Tags</label>
+        <button class="combobox-trigger empty" id="tags" type="button">
+          <span>Add tags, comma separated</span>
+          <span aria-hidden="true">▾</span>
+        </button>
+      </div>
+
+      <div class="form-row">
+        <label for="notes">Notes</label>
+        <textarea class="form-textarea" id="notes" placeholder="Wine for friends, oat milk for the week."></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button class="ghost-button" type="button">Cancel</button>
+        <button class="primary-button" type="button" style="margin-left:0">Save</button>
+      </div>
+    </aside>
+  </div>
+</body>
+</html>
