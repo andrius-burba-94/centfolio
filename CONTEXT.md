@@ -25,7 +25,13 @@ domain record in Centfolio belongs to exactly one user.
 A single financial event — money moving in or out of an account.
 Transactions come from two sources: **synced** (from the bank via
 GoCardless) or **manual** (entered by the user). Every transaction has an
-amount (positive or negative), a date, a merchant, and a description.
+amount (positive or negative), a date, a **payee**, and a description.
+
+The **payee** is the other party in the transaction: the store on a
+spend, the employer on a salary, the friend on a refund. One field
+covers both directions; calling it "merchant" forced commercial
+framing onto salary and personal income, which is why this field was
+renamed early in Phase 2.
 
 A transaction is never edited destructively. Bank-synced fields are
 read-only; user annotations (category, tags, notes) layer on top.
@@ -33,7 +39,9 @@ read-only; user annotations (category, tags, notes) layer on top.
 ### Receipt
 A digital record of a purchase, derived from a photo. A receipt has a
 merchant, a date, a total, and one or more line items. A receipt may or
-may not be matched to a transaction.
+may not be matched to a transaction. Receipts keep the field name
+"merchant" because receipts are always commercial: you do not get a
+receipt for salary or a refund from a friend.
 
 ### Line item
 A single product or service on a receipt. Has a name, a quantity, a unit
@@ -66,9 +74,9 @@ spending?" Example: a €40 transaction at a restaurant has category
 `Food > Restaurant` and tags `with_friends`, `birthday`.
 
 ### Rule
-A user-defined mapping from a merchant pattern to a category. Applied
+A user-defined mapping from a payee pattern to a category. Applied
 automatically during transaction sync and on manual transaction entry.
-Example: merchant matches "Maxima" → category `Food > Groceries`.
+Example: payee matches "Maxima" → category `Food > Groceries`.
 
 ### Budget
 A spending limit set by the user for a category over a calendar month.
@@ -100,6 +108,7 @@ appear in UI copy, code comments, type names, and conversation.
 | Earned (positive transaction) | Inflow, credit, income |
 | Held (current portfolio value) | AUM, balance, equity |
 | Owed (a negative net position, future) | Liability, debt |
+| Payee (the other party on a transaction) | Merchant, vendor, party, counterparty |
 
 These are exact terms. `Spent`, capitalized, is the column header. The
 variable is `spent` in camelCase, `SPENT` in SQL enums.
@@ -129,8 +138,9 @@ The act of linking a receipt to a transaction. A match is created either
 the user. Once matched, the receipt's line items become the itemized
 detail of the transaction.
 
-A match has a **confidence**: high (auto-matched on merchant + date +
-exact total), medium (merchant + date, total within tolerance), low (user
+A match has a **confidence**: high (auto-matched on the receipt's
+merchant against the transaction's payee, plus date and exact total),
+medium (same parties and date, total within tolerance), low (user
 override of a non-obvious link). Auto-matches at low confidence are
 flagged for user review rather than silently applied.
 
@@ -150,7 +160,7 @@ is what powers the portfolio history chart.
 The act of assigning a category to a transaction. Happens in four ways,
 in order of priority:
 
-1. **Rule-based** — if the merchant matches a user-defined rule (e.g.
+1. **Rule-based**: if the payee matches a user-defined rule (e.g.
    "Maxima" → `Food > Groceries`), the category is applied automatically
    on sync or on manual entry. Source recorded as `rule`.
 2. **AI high-confidence** — for transactions unmatched by rules, Gemini
@@ -204,7 +214,7 @@ A transaction can be `matched AND manual`. The states are independent.
 - `closed` — sold, no longer held, retained for history
 
 ### Categorization sources (enum)
-- `rule` — applied by a user-defined merchant rule
+- `rule`: applied by a user-defined payee rule
 - `ai` — applied automatically by AI at high confidence
 - `ai-reviewed` — applied after user accepted an AI suggestion
 - `manual` — applied by the user directly
@@ -251,7 +261,7 @@ These follow from the language above and are enforced in CLAUDE.md.
 
 ### Database (PocketBase)
 - Collection names: plural, camelCase — `transactions`, `lineItems`, `priceSnapshots`
-- Field names: camelCase — `merchantName`, `matchedAt`, `confidenceScore`
+- Field names use camelCase: `payee`, `matchedAt`, `confidenceScore`
 - Foreign keys: singular entity + `Id` — `userId`, `receiptId`, `transactionId`
 
 ### TypeScript

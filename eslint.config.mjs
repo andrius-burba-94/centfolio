@@ -18,6 +18,9 @@ const eslintConfig = defineConfig([
     // Skills framework cache (mirrors gitignore)
     ".agents/**",
 
+    // Local Claude worktrees (mirrors gitignore)
+    ".claude/worktrees/**",
+
     // Test setup file pulls in jest-dom matchers; no app code
     "vitest.setup.ts",
   ]),

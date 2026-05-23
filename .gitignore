@@ -67,3 +67,4 @@ pocketbase/*.zip
 
 # Skills framework — .agents/ is the symlink target, restorable via `npx skills install`
 .agents/
+.claude/worktrees/

@@ -17,7 +17,7 @@ to transactions that happened weeks before Centfolio existed, because
 the photos were never taken. Rules can be retroactively applied, but
 they were authored against the user's current spending patterns, not
 last quarter's. AI categorization on three months of context-free
-merchant strings produces low-confidence guesses at best.
+payee strings produces low-confidence guesses at best.
 
 The result is a dashboard that looks populated but is mostly
 half-classified rows that the user has to either manually fix or

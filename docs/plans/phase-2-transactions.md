@@ -30,7 +30,7 @@ real interactive surfaces.
 
 ## What's deferred
 
-- **Rule engine for merchant to category mapping**, moved to Phase 4
+- **Rule engine for payee to category mapping**, moved to Phase 4
   where it auto-categorises synced transactions and the typing
   problem actually exists. The grilling argument: rules earn their
   keep when there are 50+ transactions a week to auto-classify
@@ -64,7 +64,7 @@ real interactive surfaces.
 3. Click the link -> `/transactions`. Empty state visible.
 4. Click "Add transaction". Sheet opens, URL becomes
    `/transactions?new=true`.
-5. Fill: merchant "Maxima", sign-toggle Spent, amount "34,27", date
+5. Fill: payee "Maxima", sign-toggle Spent, amount "34,27", date
    today, category "Food > Groceries", tags "grocery", description
    "weekly run", notes "wine for friends".
 6. Save. Sheet closes, row in list, URL returns to `/transactions`.
@@ -134,7 +134,7 @@ primitives so they land before any feature work depends on them.
     timestamps. Two-level cap enforced in app code, not in PB rule.
   - `tags`: name, userId, timestamps. Unique on (userId, name) so
     Andrius cannot create duplicate tags.
-  - `transactions`: amount (integer cents, signed), date, merchantName,
+  - `transactions`: amount (integer cents, signed), date, payee,
     description, notes, categoryId (nullable), tagIds (multi-relation),
     userId, timestamps.
   - Composite index `(userId, date)` on transactions for default list
@@ -212,7 +212,7 @@ retrospective lesson on PR 19's iteration cost).
     (This month default, Last month, This year, All time, Custom),
     `<CategoryCombobox>`, `<TagCombobox>`, "Clear filters" link.
     URL state via `?q=`, `?from=`, `?to=`, `?category=`, `?tags=`.
-  - Table columns: Date, Merchant, Amount (right-aligned, tabular
+  - Table columns: Date, Payee, Amount (right-aligned, tabular
     figures, mode-appropriate `text-spent` or `text-positive` tint,
     sign prefix), Category, Tags.
   - Pagination: page-N links at the bottom. 50/page default.
@@ -222,7 +222,7 @@ retrospective lesson on PR 19's iteration cost).
     transactions match. Clear filters."
 - `<TransactionSheet>` component, rendered by `/transactions` when
   `?new=true` or `?edit=tx_id`. Form fields:
-  - Merchant (text, required, autocomplete from past merchants the
+  - Payee (text, required, autocomplete from past payees the
     user has typed)
   - Sign toggle (Spent default, Earned alternative)
   - Amount (text input with `€` prefix, accepts `34,27` or `34.27`,
@@ -276,7 +276,7 @@ retrospective lesson on PR 19's iteration cost).
   in-memory pending (a server-side timeout that finalises the delete
   after the toast window) to avoid the complications of preserving
   ids across delete+create.
-- **Merchant autocomplete source**: distinct merchant strings the
+- **Payee autocomplete source**: distinct payee strings the
   user has typed, sorted by most-recent-use. Stored as a derived
   query, no extra collection.
 - **CategoryCombobox display when category is uncategorised**:
