@@ -18,8 +18,10 @@ import {
   deleteTransaction,
   undoDeleteTransaction,
 } from "@/lib/transactions/actions";
+import type { DateRangeName } from "@/lib/transactions/date-range";
 import type { Transaction } from "@/lib/transactions/types";
 
+import { TransactionFilters } from "./transaction-filters";
 import { TransactionRow } from "./transaction-row";
 
 type Props = {
@@ -27,6 +29,15 @@ type Props = {
   totalItems: number;
   categories: Category[];
   tags: Tag[];
+  filtersActive: boolean;
+  filterInitial: {
+    q: string;
+    range: DateRangeName;
+    from?: string;
+    to?: string;
+    categoryId: string | null;
+    tagIds: string[];
+  };
 };
 
 const UNDO_WINDOW_MS = 5000;
@@ -36,6 +47,8 @@ export function TransactionsView({
   totalItems,
   categories,
   tags,
+  filtersActive,
+  filterInitial,
 }: Props) {
   const categoriesById = new Map(categories.map((c) => [c.id, c]));
   const tagsById = new Map(tags.map((t) => [t.id, t]));
@@ -125,8 +138,14 @@ export function TransactionsView({
         </Button>
       </div>
 
+      <TransactionFilters
+        initial={filterInitial}
+        categories={categories}
+        tags={tags}
+      />
+
       {visible.length === 0 ? (
-        <EmptyState />
+        <EmptyState filtersActive={filtersActive} />
       ) : (
         <div
           className="rounded-md bg-card"
@@ -174,7 +193,25 @@ export function TransactionsView({
   );
 }
 
-function EmptyState() {
+function EmptyState({ filtersActive }: { filtersActive: boolean }) {
+  if (filtersActive) {
+    return (
+      <div
+        className="flex flex-1 flex-col items-center justify-center gap-3 rounded-md bg-card p-12 text-center"
+        data-testid="transactions-empty-state-filtered"
+      >
+        <p className="font-display text-headline text-foreground">
+          No transactions match.
+        </p>
+        <p className="max-w-[42ch] text-body text-muted-foreground">
+          Clear filters to see the full list.
+        </p>
+        <Button asChild variant="ghost" className="mt-4">
+          <Link href="/transactions">Clear filters</Link>
+        </Button>
+      </div>
+    );
+  }
   return (
     <div
       className="flex flex-1 flex-col items-center justify-center gap-3 rounded-md bg-card p-12 text-center"
