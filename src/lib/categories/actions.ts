@@ -52,12 +52,16 @@ export async function createCategory(input: {
     }
   }
 
+  const payload: Record<string, unknown> = {
+    name: parsed.data.name,
+    userId: user.id,
+  };
+  if (parsed.data.parentId) {
+    payload.parentId = parsed.data.parentId;
+  }
+
   try {
-    const created = await pb.collection("categories").create({
-      name: parsed.data.name,
-      parentId: parsed.data.parentId ?? "",
-      userId: user.id,
-    });
+    const created = await pb.collection("categories").create(payload);
     revalidatePath("/transactions/categories");
     return { ok: true, data: { id: String(created.id) } };
   } catch (err) {
