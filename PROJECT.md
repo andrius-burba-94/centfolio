@@ -83,7 +83,7 @@ out. CI runs on every PR. `main` push deploys to production
 automatically. See `docs/plans/phase-1-foundation.md` for the
 execution breakdown.
 
-### Phase 2 — Manual transactions
+### Phase 2: Manual transactions ✓ shipped 2026-05-31
 **Goal**: Usable as a basic manual spending tracker.
 
 - Add, edit, delete transactions
