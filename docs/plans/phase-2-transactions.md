@@ -1,7 +1,7 @@
 # Phase 2, Manual transactions
 
-- Status: Planning
-- Updated: 2026-05-23
+- Status: Shipped 2026-05-31
+- Updated: 2026-05-31
 - Owner: Andrius
 - Prerequisites: Phase 1 shipped (CHANGELOG.md records 2026-05-22),
   retrospective lessons applied (docs/retrospectives/phase-1.md),
@@ -72,15 +72,16 @@ real interactive surfaces.
    pre-filled.
 8. Edit description to "weekly run, extras", save. List reflects the
    new description.
-9. Type "Maxima" in the search input. List filters to one row, URL
-   becomes `/transactions?q=Maxima`.
-10. Clear search. Click Delete on the row. Row vanishes from list,
+9. Navigate to `/dashboard`. Card shows "This month" with count `1`
+   and a "View all" link back to `/transactions`. (Card only renders
+   when at least one transaction exists this month; otherwise the
+   Phase 1 hero stays.) Click the link, return to `/transactions`.
+10. Type "Maxima" in the search input. List filters to one row, URL
+    becomes `/transactions?q=Maxima`.
+11. Clear search. Click Delete on the row. Row vanishes from list,
     Sonner toast appears with "Undo".
-11. Wait 5 seconds. Toast disappears, transaction is finalised gone.
-12. Navigate to `/dashboard`. Card shows "1 transaction this month"
-    with a link back to `/transactions`. (Card only renders when at
-    least one transaction exists this month; otherwise the Phase 1
-    hero stays.)
+12. Wait 5 seconds. Toast disappears, transaction is finalised gone.
+    Reload `/transactions`, empty state visible.
 13. Log out, return to `/login`.
 
 The test exercises the full vertical slice plus the dashboard bridge.
@@ -211,7 +212,12 @@ retrospective lesson on PR 19's iteration cost).
   - Filter bar above the table: search input, date-range chips
     (This month default, Last month, This year, All time, Custom),
     `<CategoryCombobox>`, `<TagCombobox>`, "Clear filters" link.
-    URL state via `?q=`, `?from=`, `?to=`, `?category=`, `?tags=`.
+    URL state via `?q=`, `?range=`, `?category=`, `?tags=`. Range
+    is a named token (`last-month`, `this-year`, `all`; absent when
+    default `this-month`) rather than concrete `?from=`/`?to=` so
+    "default this-month" can be distinguished from explicit
+    "all-time" in the URL. Custom date inputs are deferred and
+    would re-introduce `?from=`/`?to=` then.
   - Table columns: Date, Payee, Amount (right-aligned, tabular
     figures, mode-appropriate `text-spent` or `text-positive` tint,
     sign prefix), Category, Tags.
