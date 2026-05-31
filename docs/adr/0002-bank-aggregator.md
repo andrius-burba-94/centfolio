@@ -82,9 +82,40 @@ practical differentiator here.
   in production is the first time the integration meets the actual
   SEB response shape.
 
+## Amendments
+
+### 2026-05-31, Phase 4 grilling outcome: redaction policy for logging
+
+GoCardless response payloads carry IBANs, debtor / creditor names
+(potentially private individuals on P2P transfers, employer names
+on salary deposits), and free-text remittance information. The
+Phase 4 pipeline enforces a strict allow-list when calling
+`logError` from any code path under `src/lib/gocardless/**` or
+`src/lib/categorization/**`: internal IDs and failure metadata
+are allowed; raw bank-side fields are forbidden, including masked
+or hashed forms of the IBAN. The Sentry project additionally has
+its built-in IBAN scrubbing pattern enabled as defense-in-depth.
+See `.claude/rules/bank-sync.md` and `.claude/rules/categorization.md`
+for the full allow-lists.
+
+### 2026-05-31, Phase 4 grilling outcome: booked-only sync
+
+Centfolio syncs **booked** GoCardless transactions only, never
+pending. This is a correctness requirement, not just a scope choice:
+pending transactions have ephemeral `transactionId` values that can
+rotate when the transaction settles, which breaks the unique-index
+dedup guarantee on `(userId, bankAccountId, gocardlessTransactionId)`
+that the sync runner relies on. Adding pending support later
+requires explicit handling of the rotation. See
+`.claude/rules/bank-sync.md` for the constraint and the path
+forward if it ever earns its keep.
+
 ## References
 
 - `PROJECT.md` — Phase 4 (bank sync) success criteria
-- `CONTEXT.md` — the `Sync` process and `Bank connection states`
+- `CONTEXT.md`, the `Sync` process, `Bank connection`, `Bank
+  account`, `Archived account`, and `Bank connection states`
 - `docs/adr/0005-no-historical-backfill.md` — what we deliberately
   don't import from GoCardless
+- `.claude/rules/bank-sync.md`, discipline rules captured during
+  the Phase 4 grilling session

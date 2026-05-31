@@ -64,6 +64,36 @@ equal it. Discounts, split tenders, and per-item rounding all break
 that invariant legitimately. Do not assert `sum(lineItems) ==
 totalCents` anywhere in code.
 
+### Bank connection
+A user's consented link to a single bank, established via the
+GoCardless OAuth (requisition) flow. Owns the consent expiry window
+(90 days for SEB Lithuania), the institution identifier, and the
+status state machine (see `Bank connection states` below). One bank
+connection can expose one or more bank accounts.
+
+### Bank account
+A single account at a bank, surfaced under a bank connection (a
+current account, a savings account, etc.). Owns the GoCardless
+account identifier and the IBAN. Transactions belong to a bank
+account, not directly to a bank connection. Balance is intentionally
+not stored: a stale cached balance shown without context is the
+"subtly wrong is worse than visibly empty" case from PRODUCT.md.
+If balance ever ships, it is always rendered alongside the
+timestamp it was synced at.
+
+A bank account may also carry an `archivedAt` timestamp. Null means
+the account is currently in use; populated means the parent bank
+connection was rotated out (per the Reconnect flow in Phase 4) and
+this row is preserved as historical data. Archived accounts keep
+their transactions; new transactions flow into the replacement
+account row created under the new connection.
+
+### Archived account
+A bank account whose parent bank connection was rotated out and
+replaced (typically after a 90-day consent expiry and a Reconnect
+flow). The row is preserved with `archivedAt` set; its transactions
+remain queryable and remain candidates for Phase 5 matching.
+
 ### Holding
 A position in a security. Has a symbol, an exchange, a quantity, a cost
 basis, and a currency. Holdings are entered manually. Price snapshots
