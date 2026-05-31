@@ -22,6 +22,11 @@ jobs:
       SEED_USER_EMAIL: ci-user@centfolio.test
       SEED_USER_PASSWORD: ci-user-password-2026
       E2E_BASE_URL: http://127.0.0.1:3000
+      # See scripts/ci-e2e.sh and tests/helpers/gemini-mock.ts: the
+      # bypass lets E2E specs control Gemini's response without
+      # routing through Playwright's browser-only page.route(), since
+      # the real Gemini call originates from a server-side RSC.
+      E2E_GEMINI_FIXTURE_FILE: /tmp/centfolio-e2e-gemini.json
 
     steps:
       - uses: actions/checkout@v4

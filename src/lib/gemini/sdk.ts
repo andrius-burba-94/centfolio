@@ -83,6 +83,20 @@ export async function callGeminiText(
   prompt: string,
   options: GeminiCallOptions = {},
 ): Promise<string> {
+  // E2E fixture bypass. Active only when E2E_GEMINI_FIXTURE_FILE is set
+  // (set by scripts/ci-e2e.sh in CI; never set in production). Reading
+  // the file per call lets Playwright tests rotate the fixture between
+  // tests without restarting the Next process. See
+  // tests/helpers/gemini-mock.ts for the writer side.
+  //
+  // Required because the Gemini call originates from a Next RSC, which
+  // is server-side; Playwright's `page.route()` only intercepts browser
+  // fetches and would silently miss this code path.
+  const fixturePath = process.env.E2E_GEMINI_FIXTURE_FILE;
+  if (fixturePath) {
+    return await readE2EFixture(fixturePath);
+  }
+
   try {
     const response = await getClient().models.generateContent({
       model: GEMINI_MODEL,
@@ -114,6 +128,27 @@ export async function callGeminiText(
     throw new GeminiResponseError(
       "upstream-error",
       "Gemini call failed.",
+      err,
+    );
+  }
+}
+
+async function readE2EFixture(path: string): Promise<string> {
+  try {
+    const fs = await import("node:fs/promises");
+    const body = await fs.readFile(path, "utf-8");
+    if (!body) {
+      throw new GeminiResponseError(
+        "upstream-error",
+        "E2E fixture file is empty.",
+      );
+    }
+    return body;
+  } catch (err) {
+    if (err instanceof GeminiResponseError) throw err;
+    throw new GeminiResponseError(
+      "upstream-error",
+      `E2E fixture not readable: ${path}`,
       err,
     );
   }
