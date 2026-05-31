@@ -28,7 +28,13 @@ function buildFilter(userId: string, filters: TransactionFilters): string {
     parts.push(`date >= '${escapeFilterValue(filters.from)}'`);
   }
   if (filters.to) {
-    parts.push(`date <= '${escapeFilterValue(filters.to)}'`);
+    // PB stores date fields as full datetimes ("YYYY-MM-DD HH:MM:SS.sssZ"),
+    // and filter comparisons are lexicographic. A date-only upper bound
+    // would exclude any row dated on that same day, so expand to end-of-day.
+    const to = /^\d{4}-\d{2}-\d{2}$/.test(filters.to)
+      ? `${filters.to} 23:59:59.999Z`
+      : filters.to;
+    parts.push(`date <= '${escapeFilterValue(to)}'`);
   }
 
   if (filters.categoryId) {
