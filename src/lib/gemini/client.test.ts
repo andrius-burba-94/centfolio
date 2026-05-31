@@ -42,14 +42,18 @@ describe("parseReceiptText", () => {
     expect(result.lineItems[2].lineTotalCents).toBe(-80);
   });
 
-  it("forwards the assembled prompt and options to the SDK boundary", async () => {
+  it("forwards the prompt + system instruction + response schema to the SDK boundary", async () => {
     mockedCall.mockResolvedValueOnce(validReceiptJson);
     const signal = new AbortController().signal;
     await parseReceiptText("paste body here", { signal });
     expect(mockedCall).toHaveBeenCalledOnce();
     const [prompt, options] = mockedCall.mock.calls[0];
-    expect(prompt).toContain("paste body here");
-    expect(options).toEqual({ signal });
+    expect(prompt).toBe("paste body here");
+    expect(options).toMatchObject({
+      signal,
+      systemInstruction: expect.stringContaining("structured data from a receipt"),
+      responseJsonSchema: expect.any(Object),
+    });
   });
 
   it("throws GeminiResponseError with reason 'invalid-json' on non-JSON output", async () => {

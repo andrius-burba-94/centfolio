@@ -17,6 +17,7 @@
     "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
+    "@google/genai": "^2.7.0",
     "@hookform/resolvers": "^5.2.2",
     "@sentry/nextjs": "^10.53.1",
     "class-variance-authority": "^0.7.1",

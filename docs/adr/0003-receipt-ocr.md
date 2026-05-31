@@ -125,16 +125,37 @@ text source is preserved for the same audit reason as the photo
 original is available for review or re-parsing under a revised
 prompt.
 
-**Model version pinning, with quarterly review.** ADR-0003's
-original body names "Gemini 2.5 Flash"; the pin is implemented as a
-`GEMINI_MODEL` constant in `src/lib/gemini/client.ts`, currently
-set to the current GA Flash model (verified against the GCP console
-at PR 1 time). The constant updates only on a deliberate PR that
-re-runs the prompt regression fixtures; "follow latest" string
-forms like `gemini-2.5-flash` (without a date suffix) are not used.
-Review the pin quarterly and on any reported parse-quality
-regression. The model choice remains reversible per the original
-decision; the prompt and the Zod schema are the durable artifacts.
+**Model version pinning: bare stable identifier, channel-aware
+update policy.** ADR-0003's original body names "Gemini 2.5 Flash."
+At PR 3 time (2026-05-31), Google's Flash lineup is:
+
+- **2.5 Flash**: the original ADR-0003 choice; **deprecating 2026-06-17**.
+- **3 Flash**: Preview channel only; not Stable.
+- **3.5 Flash**: Stable channel, and the most intelligent Flash model.
+
+PR 3 therefore moves the `GEMINI_MODEL` constant in
+`src/lib/gemini/sdk.ts` to `"gemini-3.5-flash"`, the bare stable
+identifier published by Google. The earlier no-aliases language
+(applied while we were still pre-implementation) was a misread: in
+Google's current scheme, `gemini-3.5-flash` is itself the durable
+name of the Stable channel, not an alias that drifts. The drifting
+identifiers are the Preview and Experimental channels and the dated
+snapshots; we pin the Stable channel.
+
+Update policy:
+
+- Bump `GEMINI_MODEL` only on a deliberate PR that re-runs the
+  prompt fixture set against the new identifier.
+- Stay on Stable. Do not adopt Preview or Experimental channels
+  for capability gains. We move when the next channel promotes
+  to Stable.
+- Pin a dated snapshot (`gemini-3.5-flash-001`-style) only when
+  reproducibility at a frozen point in time is needed (e.g., when
+  investigating a fixture-vs-prod parse divergence). Default
+  remains the bare stable identifier.
+
+The model choice remains reversible per the original decision; the
+prompt and the Zod schema are the durable artifacts.
 
 ## References
 
