@@ -107,8 +107,25 @@ admits signed `lineTotalCents`.
 
 ## Fixture discipline
 
-E2E specs intercept the Gemini HTTP call and replay recorded
-fixtures from `tests/fixtures/gemini/`. The discipline:
+E2E specs control Gemini's response via a **server-side file
+bypass**, NOT via Playwright `page.route()`. The Gemini call
+originates from a server-side RSC; Playwright's route interceptor
+only sees browser fetches and would silently miss the call.
+
+The mechanism (see `src/lib/gemini/sdk.ts`):
+
+- If the env var `E2E_GEMINI_FIXTURE_FILE` is set, `callGeminiText`
+  reads the file at that path and returns its contents as the
+  Gemini response body, bypassing the real SDK call.
+- The var is set by `scripts/ci-e2e.sh` and the GitHub Actions
+  workflow only. It is never set in production.
+- Tests write the desired body to the file before each test (see
+  `tests/helpers/gemini-mock.ts`: `setGeminiHappy`, `setGeminiMalformed`).
+- `afterEach` calls `clearGeminiFixture` so a missing setup in the
+  next test surfaces as a clear "fixture not readable" error rather
+  than silently replaying the prior test's body.
+
+Recorded-fixture-from-real-receipts discipline:
 
 - One fixture per real-world parse case (`iki-email-typical.json`,
   `maxima-receipt-typical.json`, `iki-malformed.json` for the
@@ -117,10 +134,6 @@ fixtures from `tests/fixtures/gemini/`. The discipline:
 - Fixtures captured from real Lithuanian receipts with PII scrubbed
   before commit: loyalty IDs, email recipients, phone numbers,
   cashier IDs. The scrub is manual; assume nothing.
-- Re-record on prompt or `response_schema` change:
-  `UPDATE_FIXTURES=true npm run test:e2e` lets the calls through and
-  rewrites the fixtures; the PR that changes the prompt also
-  contains the fixture diff.
 - The first set must include at least one **adversarial** fixture
   (a Maxima receipt with `AČIŪ nuolaida prekei` discount lines,
   `Atsiskaityta MAXIMOS pinigais` split-tender lines, and

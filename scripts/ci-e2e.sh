@@ -41,9 +41,16 @@ fi
 : "${SEED_USER_EMAIL:?SEED_USER_EMAIL must be set in .env.local}"
 : "${SEED_USER_PASSWORD:?SEED_USER_PASSWORD must be set in .env.local}"
 : "${E2E_BASE_URL:=http://127.0.0.1:3000}"
+# Gemini fixture bypass: when this var is set, src/lib/gemini/sdk.ts
+# reads the file at this path and returns its contents instead of
+# calling the real Gemini API. tests/helpers/gemini-mock.ts writes
+# the file before each test. Required because the Gemini call runs
+# server-side in an RSC, which Playwright page.route() cannot
+# intercept.
+: "${E2E_GEMINI_FIXTURE_FILE:=/tmp/centfolio-e2e-gemini.json}"
 
 export POCKETBASE_URL POCKETBASE_ADMIN_EMAIL POCKETBASE_ADMIN_PASSWORD
-export SEED_USER_EMAIL SEED_USER_PASSWORD E2E_BASE_URL
+export SEED_USER_EMAIL SEED_USER_PASSWORD E2E_BASE_URL E2E_GEMINI_FIXTURE_FILE
 
 echo "--- Installing PocketBase (idempotent) ---"
 bash scripts/install-pocketbase.sh

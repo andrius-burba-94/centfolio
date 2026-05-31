@@ -1,8 +1,9 @@
 import { expect, test } from "@playwright/test";
 
 import {
-  mockGeminiHappy,
-  mockGeminiMalformed,
+  clearGeminiFixture,
+  setGeminiHappy,
+  setGeminiMalformed,
 } from "../helpers/gemini-mock";
 
 const EMAIL = process.env.SEED_USER_EMAIL ?? "";
@@ -60,6 +61,10 @@ test.describe("Phase 3 receipts, text mode", () => {
     }
   });
 
+  test.afterEach(async () => {
+    await clearGeminiFixture();
+  });
+
   async function login(page: import("@playwright/test").Page) {
     await page.goto("/login");
     await page.getByTestId("email-input").fill(EMAIL);
@@ -69,7 +74,7 @@ test.describe("Phase 3 receipts, text mode", () => {
   }
 
   test("happy path: paste, parse, edit, confirm, delete", async ({ page }) => {
-    await mockGeminiHappy(page, PARSED_HAPPY);
+    await setGeminiHappy(PARSED_HAPPY);
     await login(page);
 
     // Receipts inline link in the top nav.
@@ -140,7 +145,7 @@ test.describe("Phase 3 receipts, text mode", () => {
   });
 
   test("failed-state path: malformed parse, retry button visible", async ({ page }) => {
-    await mockGeminiMalformed(page);
+    await setGeminiMalformed();
     await login(page);
 
     await page.getByTestId("nav-link-receipts").click();
