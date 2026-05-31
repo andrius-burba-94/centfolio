@@ -8,6 +8,67 @@ ships.
 
 ## [Unreleased]
 
+## [Phase 3, Receipts] 2026-05-31
+
+### Added
+
+- Receipts at `/receipts`: list, detail, entry. Two input modes
+  sharing one parse/confirm/store pipeline:
+  - **Text**: paste the body of an emailed receipt (Maxima Ačiū,
+    IKI Bonus, etc.). The Save action creates a `parsing` row and
+    navigates to the detail page.
+  - **Photo**: phone-camera capture or desktop file picker. JPEG,
+    PNG, WebP, and HEIC inputs accepted; server-side `sharp` pipeline
+    normalizes to JPEG quality 85 at max 1600px long-edge, auto-
+    rotates from EXIF, and strips EXIF before storage and the
+    Gemini call. Raw upload cap 15 MB; stored cap 5 MB.
+- Detail page (`/receipts/[id]`) uses a sync-behind-navigation
+  pipeline: the shell (header, source-evidence pane, status badge)
+  renders synchronously while the Gemini parse streams in behind a
+  `<Suspense>` boundary with a skeleton fallback. The detail RSC
+  catches Gemini failures, writes them as `failed` state to the row,
+  and renders the failed-state UI with a Try again affordance.
+- Review form with inline editing of merchant, date, and line item
+  names. Cut-Into-the-Page rule on focus (transparent at rest, ring
+  on focus). Discount and split-tender lines surfaced as a
+  subordinate-row treatment with negative `lineTotalCents` per
+  CONTEXT.md.
+- Gemini 3.5 Flash via the official `@google/genai` SDK with
+  `responseMimeType: 'application/json'` and `responseJsonSchema`
+  derived from the Zod source-of-truth schema. System instructions
+  Lithuanian-receipt-aware: preserves discount and split-tender
+  lines as separate negative line items rather than folding them.
+- `/about/privacy` page: honest disclosure covering what data
+  leaves Centfolio (photo or pasted text -> Google's Gemini), the
+  pinned model identifier, retention, and a link to ADR-0003.
+- `Receipts` inline link in the top nav alongside Dashboard and
+  Transactions.
+- `parseAttempts` cap per receipt (default 3, server-side reset
+  only) plus account-level billing budget and API quota cap on the
+  GCP project: per-row defense against orphaned re-parses, account-
+  level defense against a leaked key or runaway loop.
+- Playwright E2E coverage of both modes, intercepting Gemini at the
+  SDK boundary via a server-side fixture-file bypass.
+
+### Deferred
+
+- Real receipt fixture recording with PII-scrubbed Maxima / IKI
+  bodies. The helper format and the SDK-boundary bypass are in
+  place; recording from real receipts will land alongside Phase 5
+  match work as prompt iteration ramps.
+- Phase 5 match logic: receipts and transactions stay unconnected.
+  CONTEXT.md keeps `matched` as a documented future state until
+  Phase 5 adds the `transactionId` relation.
+- Sidebar navigation: top-bar inline link pattern continues. The
+  honest trigger is 5+ primary destinations, likely Phase 4 or 6.
+- Fiscal / receipt number extraction (the `Fiskalinis numeris`
+  line on Lithuanian receipts). Out of Phase 3 scope; documented
+  in `.claude/rules/receipts.md` as the natural `(userId,
+  fiscalNumber)` dedup key when dedup earns its keep.
+- Editing the receipt total in the review UI. In practice Gemini
+  extracts the bill total correctly; editing would land as polish
+  if real use surfaces a need.
+
 ## [Phase 2, Manual transactions] 2026-05-31
 
 ### Added

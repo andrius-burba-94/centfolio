@@ -133,6 +133,79 @@ export async function callGeminiText(
   }
 }
 
+/**
+ * Multimodal SDK boundary: a prompt plus an inline photo (normalized
+ * JPEG bytes), one JSON-body string out. Shares the E2E fixture
+ * bypass with `callGeminiText` because the response shape is the
+ * same (a JSON `ParsedReceipt` body); only the request differs.
+ *
+ * Photo bytes are base64-encoded and embedded as an `inlineData`
+ * part. Gemini accepts ≤20MB per inline part, far above the 5MB
+ * cap we enforce on the stored photo.
+ */
+export async function callGeminiPhoto(
+  prompt: string,
+  photo: { mimeType: string; bytes: Buffer | Uint8Array },
+  options: GeminiCallOptions = {},
+): Promise<string> {
+  const fixturePath = process.env.E2E_GEMINI_FIXTURE_FILE;
+  if (fixturePath) {
+    return await readE2EFixture(fixturePath);
+  }
+
+  const photoBytes = photo.bytes instanceof Buffer
+    ? photo.bytes
+    : Buffer.from(photo.bytes);
+
+  try {
+    const response = await getClient().models.generateContent({
+      model: GEMINI_MODEL,
+      contents: [
+        {
+          role: "user",
+          parts: [
+            { text: prompt },
+            {
+              inlineData: {
+                mimeType: photo.mimeType,
+                data: photoBytes.toString("base64"),
+              },
+            },
+          ],
+        },
+      ],
+      config: {
+        responseMimeType: "application/json",
+        responseJsonSchema: options.responseJsonSchema,
+        systemInstruction: options.systemInstruction,
+        abortSignal: options.signal,
+      },
+    });
+    const text = response.text;
+    if (typeof text !== "string" || text.length === 0) {
+      throw new GeminiResponseError(
+        "upstream-error",
+        "Gemini returned an empty response body.",
+      );
+    }
+    return text;
+  } catch (err) {
+    if (err instanceof GeminiResponseError) throw err;
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new GeminiResponseError(
+        "timeout",
+        "Gemini request was aborted.",
+        err,
+      );
+    }
+    throw new GeminiResponseError(
+      "upstream-error",
+      "Gemini multimodal call failed.",
+      err,
+    );
+  }
+}
+
 async function readE2EFixture(path: string): Promise<string> {
   try {
     const fs = await import("node:fs/promises");

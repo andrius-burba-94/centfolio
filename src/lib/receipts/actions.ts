@@ -9,6 +9,10 @@ import { pbErrorMessage } from "@/lib/pocketbase/error";
 
 import type { ActionResult } from "@/lib/categories/actions";
 
+import {
+  normalizeReceiptPhoto,
+  RAW_UPLOAD_MAX_BYTES,
+} from "./photo";
 import { lineItemSchema } from "./schema";
 
 const createFromTextSchema = z.object({
@@ -39,6 +43,61 @@ export async function createReceiptFromText(input: {
     return { ok: true, data: { id: String(created.id) } };
   } catch (err) {
     logError(err, { action: "createReceiptFromText", userId: user.id });
+    return {
+      ok: false,
+      error: pbErrorMessage(err, "Failed to save receipt."),
+    };
+  }
+}
+
+const ACCEPTED_PHOTO_MIMES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+]);
+
+export async function createReceiptFromPhoto(
+  formData: FormData,
+): Promise<ActionResult<{ id: string }>> {
+  const file = formData.get("photo");
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, error: "Select a photo of the receipt to upload." };
+  }
+  if (file.size > RAW_UPLOAD_MAX_BYTES) {
+    return {
+      ok: false,
+      error: "Photo is larger than 15 MB. Try a smaller image.",
+    };
+  }
+  if (file.type && !ACCEPTED_PHOTO_MIMES.has(file.type)) {
+    return {
+      ok: false,
+      error: "Unsupported photo format. Use JPEG, PNG, WebP, or HEIC.",
+    };
+  }
+
+  const { pb, user } = await requireAuthenticatedPb();
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const normalized = await normalizeReceiptPhoto(buffer);
+    const normalizedFile = new File([new Uint8Array(normalized.buffer)], "receipt.jpg", {
+      type: "image/jpeg",
+    });
+
+    const payload = new FormData();
+    payload.set("userId", user.id);
+    payload.set("status", "parsing");
+    payload.set("sourceType", "photo");
+    payload.set("parseAttempts", "0");
+    payload.set("photo", normalizedFile);
+
+    const created = await pb.collection("receipts").create(payload);
+    revalidatePath("/receipts");
+    return { ok: true, data: { id: String(created.id) } };
+  } catch (err) {
+    logError(err, { action: "createReceiptFromPhoto", userId: user.id });
     return {
       ok: false,
       error: pbErrorMessage(err, "Failed to save receipt."),

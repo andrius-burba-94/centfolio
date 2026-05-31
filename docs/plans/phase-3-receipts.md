@@ -1,6 +1,6 @@
 # Phase 3, Receipts
 
-- Status: Draft, awaiting approval
+- Status: Shipped 2026-05-31
 - Date: 2026-05-31
 - Owner: Andrius
 - Prerequisites: Phase 2 shipped (CHANGELOG.md records 2026-05-31).
