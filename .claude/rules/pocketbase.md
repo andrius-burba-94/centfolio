@@ -43,6 +43,24 @@ false uniqueness conflicts on numeric indexes. Don't put unique
 constraints on numeric fields. Enforce uniqueness in app code
 instead.
 
+## Never required:true on a zero-valued number field
+
+PocketBase v0.38.1 rejects `required: true` number fields when the
+submitted value is `0`. The error is "Cannot be blank" because the
+required check coerces the value with a truthy test before the
+type-aware validators run.
+
+If a number field can legitimately be 0 at runtime (counters,
+positions, signed cents that may be zero, default-1 quantities that
+could become 0 later), set `required: false` in the migration. The
+app code still sends an explicit value; PB defaults missing number
+fields to 0 anyway, so the field's value is well-defined.
+
+Caught in Phase 3 on `receipts.parseAttempts` and `lineItems.position
+/ lineTotalCents / quantity` (migrations 1780000300 and 1780000400).
+Worth scanning new migrations for `"type": "number"` + `"required":
+true` before merging.
+
 ## Schema as code
 
 Schema is the source of truth at `pocketbase/schema.json`. The
