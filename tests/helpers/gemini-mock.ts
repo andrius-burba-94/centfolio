@@ -76,17 +76,56 @@ export async function mockGeminiMalformed(page: Page) {
     route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({
-        candidates: [
-          {
-            content: {
-              parts: [{ text: "not json at all" }],
-              role: "model",
-            },
-            finishReason: "STOP",
-          },
-        ],
-      }),
+      body: JSON.stringify(toGeminiResponse("not json at all")),
     }),
   );
+}
+
+/**
+ * Inline-fulfill the Gemini call with a synthetic `ParsedReceipt`
+ * body. Useful for E2E specs that exercise the happy path without
+ * requiring a recorded fixture (typical use until real receipts get
+ * scrubbed and committed).
+ */
+export async function mockGeminiHappy(
+  page: Page,
+  parsedReceipt: {
+    merchant: string;
+    date: string;
+    totalCents: number;
+    lineItems: Array<{
+      name: string;
+      quantity?: number;
+      unit?: string | null;
+      unitPriceCents?: number | null;
+      lineTotalCents: number;
+    }>;
+  },
+) {
+  await page.route(GEMINI_HOST_PATTERN, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(
+        toGeminiResponse(JSON.stringify(parsedReceipt)),
+      ),
+    }),
+  );
+}
+
+function toGeminiResponse(text: string) {
+  return {
+    candidates: [
+      {
+        content: {
+          parts: [{ text }],
+          role: "model",
+        },
+        finishReason: "STOP",
+        index: 0,
+      },
+    ],
+    modelVersion: "gemini-3.5-flash",
+    responseId: "test-response",
+  };
 }
