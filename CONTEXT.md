@@ -37,16 +37,32 @@ A transaction is never edited destructively. Bank-synced fields are
 read-only; user annotations (category, tags, notes) layer on top.
 
 ### Receipt
-A digital record of a purchase, derived from a photo. A receipt has a
-merchant, a date, a total, and one or more line items. A receipt may or
-may not be matched to a transaction. Receipts keep the field name
-"merchant" because receipts are always commercial: you do not get a
-receipt for salary or a refund from a friend.
+A digital record of a purchase, derived from a **photo** (taken by the
+user) or from **machine-readable text** (an emailed receipt summary
+from a Lithuanian chain, pasted in by the user). A receipt has a
+source type (`photo` or `text`), a merchant, a date, a total, and one
+or more line items. A receipt may or may not be matched to a
+transaction. Receipts keep the field name "merchant" because receipts
+are always commercial: you do not get a receipt for salary or a refund
+from a friend.
 
 ### Line item
-A single product or service on a receipt. Has a name, a quantity, a unit
-price, and a line total. Line items are extracted from the receipt photo
-by Gemini; the user can edit them after extraction.
+A single product or service on a receipt, or for some receipt
+formats a discount line, a whole-receipt adjustment, or a split-
+tender notation (loyalty-currency payment, etc.) that the source
+receipt presents as its own line. Has a name, a quantity (default 1,
+decimals allowed for weighed goods such as `0.342 kg bananas`), an
+optional unit (`kg`, `g`, `L`, etc., or null when the receipt doesn't
+specify one), a unit price, and a line total. Line totals may be
+negative for discount or split-tender lines. Line items are extracted
+from the receipt photo or source text by Gemini; the user can edit,
+add, or delete them after extraction.
+
+The receipt's `totalCents` is the authoritative bill total parsed
+from the receipt; the sum of line totals is **not** guaranteed to
+equal it. Discounts, split tenders, and per-item rounding all break
+that invariant legitimately. Do not assert `sum(lineItems) ==
+totalCents` anywhere in code.
 
 ### Holding
 A position in a security. Has a symbol, an exchange, a quantity, a cost
@@ -189,11 +205,15 @@ Every entity that has a lifecycle has explicit states. Code uses these
 exact strings as enum values.
 
 ### Receipt states
-- `pending` — uploaded, OCR in progress
+- `parsing`: uploaded, Gemini extraction in flight
 - `parsed` — OCR complete, ready for user review
 - `confirmed` — user has reviewed and approved the extracted data
 - `matched` — confirmed and linked to a transaction
-- `failed` — OCR failed; user must enter manually
+- `failed`: parsing failed; user may retry (resets attempts and
+  re-invokes Gemini) or delete the receipt. Hand-typed receipt entry
+  is out of scope for v1; if a manual path is ever needed, the
+  intended shape is a bridge to a Phase 2 transaction (recorded
+  without line-item detail), not a duplicate receipt form.
 
 ### Transaction states
 - `unmatched` — no receipt linked (default)
@@ -245,9 +265,18 @@ fully classified. Includes:
 Surfaces on the dashboard as a count, expands to a full list on click.
 
 ### Receipt photo
-The original uploaded image, stored in PocketBase file storage. Never
-discarded — even after parsing, the photo remains for audit. Storage
-budget: 5 MB per photo, auto-compressed on upload.
+The original uploaded image when `sourceType` is `photo`. Stored in
+PocketBase file storage and never discarded, since even after parsing
+the photo remains available for audit. Storage budget: 5 MB per photo,
+auto-compressed on upload (server-side normalization to JPEG at
+≤1600px long-edge).
+
+### Receipt source text
+The raw pasted text when `sourceType` is `text`: the body of an
+emailed receipt summary from a Lithuanian chain (Maxima Ačiū, IKI
+Bonus). Stored on the receipt row as a text field, never discarded
+for the same audit reason as the photo: if Gemini's parsing was
+wrong, the original is available for review or re-parsing.
 
 ### High-confidence threshold
 The minimum AI confidence score for automatic categorization. Set to
