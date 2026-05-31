@@ -1,6 +1,6 @@
 # ADR-0003: Receipt OCR pipeline
 
-- Status: Accepted
+- Status: Accepted (amended 2026-05-31)
 - Date: 2026-05-18
 - Deciders: Andrius
 
@@ -91,9 +91,61 @@ the rest of the application's resource budget.
   per `CONTEXT.md` ("Receipt photo … never discarded"). This means
   re-running extraction against a future model is always an option.
 
+## Amendments
+
+### 2026-05-31, Phase 3 grilling outcomes
+
+The architecture grilling session for Phase 3 surfaced three
+additions to the original decision. None of them invalidates the
+"one network call, structured output, Zod validation" core; they
+extend the surface.
+
+**Two input modes, not one.** In addition to the photo path, the
+user may paste the body of a machine-readable receipt email
+(Maxima Ačiū, IKI Bonus) directly. Both modes hit Gemini with the
+same `responseSchema` derived from the same Zod schema, and both
+produce the same `ParsedReceipt` shape downstream. The fork is only
+at the input boundary:
+
+- `parseReceiptText(text)` issues a text-only Gemini call.
+- `parseReceiptPhoto(buffer)` issues a multimodal call with the
+  normalized JPEG inline. Photo arrives at this function after the
+  `sharp` normalization pipeline (decode, EXIF rotate, resize to
+  1600px long-edge, JPEG quality 85, EXIF strip).
+
+The text path is materially cheaper (no vision tokens, smaller
+context). The two functions converge immediately on the same Zod
+validation and the same downstream pipeline.
+
+**`sourceType` enum and `sourceText` audit field.** The receipt
+row carries `sourceType: 'photo' | 'text'` and, when `sourceType =
+'text'`, a `sourceText` field holding the raw pasted body. The
+text source is preserved for the same audit reason as the photo
+(CONTEXT.md "never discarded"): if Gemini's parse was wrong, the
+original is available for review or re-parsing under a revised
+prompt.
+
+**Model version pinning, with quarterly review.** ADR-0003's
+original body names "Gemini 2.5 Flash"; the pin is implemented as a
+`GEMINI_MODEL` constant in `src/lib/gemini/client.ts`, currently
+set to the current GA Flash model (verified against the GCP console
+at PR 1 time). The constant updates only on a deliberate PR that
+re-runs the prompt regression fixtures; "follow latest" string
+forms like `gemini-2.5-flash` (without a date suffix) are not used.
+Review the pin quarterly and on any reported parse-quality
+regression. The model choice remains reversible per the original
+decision; the prompt and the Zod schema are the durable artifacts.
+
 ## References
 
-- `PROJECT.md` — Phase 3 success criteria
-- `CONTEXT.md` — `Receipt`, `Line item`, and the receipt state machine
-- `docs/adr/0001-stack.md` — Zod is part of the stack; this ADR
+- `PROJECT.md`, Phase 3 success criteria
+- `CONTEXT.md`, `Receipt`, `Receipt source text`, `Line item`, and
+  the receipt state machine (all amended during the 2026-05-31
+  grilling session)
+- `docs/adr/0001-stack.md`, Zod is part of the stack; this ADR
   assumes it
+- `docs/plans/phase-3-receipts.md`, the implementation plan that
+  references this amendment
+- `.claude/rules/receipts.md`, captures the discipline rules
+  (parseAttempts cap, Suspense contract, fixture scrub) that flow
+  from the decisions here
