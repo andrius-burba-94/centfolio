@@ -50,8 +50,10 @@ test.describe("Phase 2 acceptance path", () => {
     await page.getByTestId("tx-amount-input").fill("34,27");
     // Date defaults to today; leave as-is.
 
+    const form = page.getByTestId("transaction-form");
+
     // Category: Food > Groceries (seeded).
-    await page.getByTestId("category-combobox-trigger").click();
+    await form.getByTestId("category-combobox-trigger").click();
     await page
       .locator('[data-testid^="category-combobox-item-"]')
       .filter({ hasText: "Food > Groceries" })
@@ -59,7 +61,7 @@ test.describe("Phase 2 acceptance path", () => {
       .click();
 
     // Tag: inline-create "grocery".
-    await page.getByTestId("tag-combobox-trigger").click();
+    await form.getByTestId("tag-combobox-trigger").click();
     await page.getByTestId("tag-combobox-input").fill("grocery");
     await page.getByTestId("tag-combobox-create").click();
     // Close the popover by clicking the trigger again.
