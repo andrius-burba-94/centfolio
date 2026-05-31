@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Centfolio receipts, light mode</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --background: oklch(0.99 0.005 38);
+      --foreground: oklch(0.22 0.020 38);
+      --card: oklch(0.96 0.010 38);
+      --muted: oklch(0.94 0.012 38);
+      --muted-foreground: oklch(0.50 0.020 38);
+      --placeholder: oklch(0.65 0.020 38);
+      --border: oklch(0.90 0.015 38);
+      --input: oklch(0.80 0.020 38);
+      --ring: oklch(0.55 0.12 38);
+      --primary: oklch(0.45 0.13 38);
+      --primary-foreground: oklch(0.99 0.005 38);
+      --primary-hover: oklch(0.40 0.13 38);
+      --destructive: oklch(0.30 0.05 25);
+      --positive: oklch(0.30 0.05 130);
+      --overlay: oklch(0.14 0.012 38 / 0.5);
+      --shadow-lifted-floating: 0 8px 24px -8px oklch(0.55 0.12 38 / 0.18);
+      --font-display: "Fraunces", Georgia, serif;
+      --font-sans: "Inter", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { font-feature-settings: "tnum" 1; }
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: var(--font-sans);
+      font-size: 17px;
+      line-height: 1.60;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .state-label {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+      color: var(--muted-foreground);
+      padding: 32px 32px 12px;
+      border-top: 1px solid var(--border);
+    }
+    .state-label:first-of-type { border-top: none; }
+    .frame {
+      position: relative;
+      min-height: 720px;
+      background-color: var(--background);
+      border-top: 1px solid var(--border);
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 32px;
+      height: 64px;
+    }
+    .top-bar-left { display: flex; align-items: center; gap: 32px; }
+    .wordmark {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: 22px;
+      line-height: 1.20;
+      letter-spacing: -0.005em;
+      color: var(--foreground);
+    }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-link {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      color: var(--muted-foreground);
+      text-decoration: none;
+    }
+    .nav-link.active { color: var(--foreground); }
+    .top-bar-right { display: flex; align-items: center; gap: 12px; }
+    .icon-button {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px;
+      background: transparent;
+      color: var(--muted-foreground);
+      border: none; border-radius: 4px;
+    }
+    .initials-circle {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px;
+      background-color: var(--muted); color: var(--foreground);
+      border: none; border-radius: 9999px;
+      font-weight: 500; font-size: 14px; letter-spacing: 0.01em;
+    }
+
+    .page { padding: 24px 32px 48px; }
+    .page-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .page-title {
+      font-family: var(--font-display);
+      font-weight: 400; font-size: 30px; line-height: 1.20;
+      color: var(--foreground);
+    }
+    .page-meta {
+      font-size: 14px; color: var(--muted-foreground);
+    }
+
+    .button-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 18px;
+      background-color: var(--primary); color: var(--primary-foreground);
+      border: none; border-radius: 4px;
+      font-family: var(--font-sans);
+      font-size: 14px; font-weight: 500; letter-spacing: 0.01em;
+      cursor: pointer;
+    }
+    .button-primary:hover { background-color: var(--primary-hover); }
+    .button-ghost {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 12px;
+      background-color: transparent;
+      color: var(--muted-foreground);
+      border: none; border-radius: 4px;
+      font-family: var(--font-sans);
+      font-size: 14px; font-weight: 500; letter-spacing: 0.01em;
+      cursor: pointer;
+    }
+    .button-ghost:hover { background-color: var(--card); }
+
+    .empty-state {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 96px 24px;
+      text-align: center;
+    }
+    .empty-state-display {
+      font-family: var(--font-display);
+      font-weight: 400; font-size: 30px; line-height: 1.20;
+      color: var(--foreground);
+      margin-bottom: 12px;
+    }
+    .empty-state-body {
+      font-size: 17px; color: var(--muted-foreground);
+      margin-bottom: 24px; max-width: 42ch;
+    }
+
+    .receipts-table { width: 100%; border-collapse: collapse; }
+    .receipts-table th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 14px; font-weight: 500; letter-spacing: 0.01em;
+      color: var(--muted-foreground);
+      border-bottom: 1px solid var(--border);
+    }
+    .receipts-table th.amount-col { text-align: right; }
+    .receipts-table td {
+      padding: 16px;
+      font-size: 17px;
+      color: var(--foreground);
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .receipts-table td.amount-col {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .receipts-table tr:hover td { background-color: var(--card); }
+    .source-indicator {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px;
+      color: var(--muted-foreground);
+      margin-right: 8px;
+      vertical-align: -4px;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 12px; font-weight: 500; letter-spacing: 0.01em;
+      border-radius: 4px;
+      background-color: var(--muted);
+      color: var(--muted-foreground);
+    }
+    .status-badge.parsing { background-color: var(--muted); color: var(--foreground); }
+    .status-badge.parsed { background-color: var(--muted); color: var(--foreground); }
+    .status-badge.confirmed { background-color: var(--card); color: var(--positive); }
+    .status-badge.failed { background-color: var(--card); color: var(--destructive); }
+
+    .sheet-backdrop {
+      position: absolute; inset: 0;
+      background-color: var(--overlay);
+      pointer-events: none;
+    }
+    .sheet {
+      position: absolute;
+      top: 0; right: 0; bottom: 0; width: 480px;
+      background-color: var(--card);
+      border-left: 1px solid var(--border);
+      box-shadow: var(--shadow-lifted-floating);
+      padding: 24px;
+      display: flex; flex-direction: column;
+    }
+    .sheet-title {
+      font-family: var(--font-display);
+      font-weight: 400; font-size: 22px; line-height: 1.20;
+      margin-bottom: 24px;
+    }
+    .field-label {
+      display: block;
+      font-size: 14px; font-weight: 500; letter-spacing: 0.01em;
+      color: var(--muted-foreground);
+      margin-bottom: 6px;
+    }
+    .text-input, .textarea-input {
+      width: 100%;
+      padding: 10px 14px;
+      background-color: var(--background);
+      color: var(--foreground);
+      border: 1px solid var(--input);
+      border-radius: 4px;
+      font-family: var(--font-sans);
+      font-size: 17px;
+      line-height: 1.45;
+    }
+    .textarea-input { min-height: 280px; resize: vertical; font-size: 14px; line-height: 1.55; font-variant-numeric: tabular-nums; }
+    .privacy-line {
+      font-size: 14px; color: var(--muted-foreground);
+      margin: 12px 0 24px;
+    }
+    .privacy-line a { color: var(--foreground); text-decoration: underline; text-underline-offset: 2px; }
+    .sheet-actions {
+      display: flex; gap: 8px; justify-content: flex-end;
+      margin-top: auto;
+      padding-top: 16px;
+    }
+
+    .detail-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+      gap: 32px;
+      align-items: start;
+    }
+    .evidence-pane {
+      background-color: var(--card);
+      border-radius: 8px;
+      padding: 16px;
+      position: sticky; top: 24px;
+    }
+    .evidence-pane .field-label { margin-bottom: 12px; }
+    .source-text-block {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px; line-height: 1.55;
+      color: var(--foreground);
+      white-space: pre-wrap;
+      background-color: var(--background);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px;
+      max-height: 480px; overflow-y: auto;
+    }
+    .photo-thumb {
+      width: 100%;
+      background-color: var(--background);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      aspect-ratio: 3 / 4;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--placeholder);
+      font-size: 14px;
+    }
+
+    .parsed-card {
+      background-color: var(--card);
+      border-radius: 8px;
+      padding: 24px;
+    }
+    .receipt-merchant {
+      font-family: var(--font-display);
+      font-weight: 400; font-size: 30px; line-height: 1.20;
+      color: var(--foreground);
+      margin-bottom: 4px;
+    }
+    .receipt-date {
+      font-size: 14px; color: var(--muted-foreground);
+      margin-bottom: 20px;
+    }
+    .line-items {
+      display: flex; flex-direction: column;
+      gap: 2px;
+      margin-bottom: 16px;
+    }
+    .line-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto 96px;
+      gap: 16px;
+      align-items: baseline;
+      padding: 8px 0;
+    }
+    .line-item.subordinate { font-size: 14px; }
+    .line-item.subordinate .line-item-name,
+    .line-item.subordinate .line-item-name input {
+      color: var(--muted-foreground);
+      font-size: 14px;
+    }
+    .line-item-name {
+      font-size: 17px; color: var(--foreground);
+      min-width: 0;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .line-item-name input,
+    .receipt-date input,
+    .receipt-merchant[contenteditable] {
+      background: transparent;
+      border: 1px solid transparent;
+      outline: none;
+      padding: 2px 6px;
+      margin-left: -6px;
+      border-radius: 3px;
+      font: inherit;
+      color: inherit;
+      width: 100%;
+    }
+    .line-item-name input:focus,
+    .receipt-date input:focus,
+    .receipt-merchant[contenteditable]:focus {
+      background-color: var(--background);
+      border-color: var(--input);
+      box-shadow: 0 0 0 2px var(--ring);
+    }
+    .line-item-qty {
+      font-size: 14px; color: var(--foreground);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .line-item-total {
+      font-size: 17px;
+      color: var(--foreground);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .line-item.subordinate .line-item-total { font-size: 14px; }
+    .line-item-total.negative { color: var(--destructive); }
+    .line-items-actions {
+      display: flex; gap: 4px;
+      margin-top: 12px;
+    }
+    .total-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto 96px;
+      gap: 16px;
+      align-items: baseline;
+      padding: 16px 0 0;
+      border-top: 1px solid var(--border);
+      margin-top: 12px;
+    }
+    .total-label {
+      font-size: 14px; font-weight: 500;
+      letter-spacing: 0.01em;
+      color: var(--muted-foreground);
+    }
+    .total-value {
+      font-family: var(--font-display);
+      font-size: 22px; font-weight: 400;
+      grid-column: 3;
+      text-align: right;
+      color: var(--foreground);
+      font-variant-numeric: tabular-nums;
+    }
+    .confirm-actions {
+      display: flex; gap: 8px; justify-content: flex-end;
+      margin-top: 24px;
+    }
+
+    .skeleton {
+      background-color: var(--muted);
+      border-radius: 4px;
+      animation: skeleton-pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes skeleton-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    .skeleton-text { height: 14px; }
+    .skeleton-line-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto 96px;
+      gap: 16px;
+      align-items: baseline;
+      padding: 8px 0;
+    }
+
+    .failed-card {
+      background-color: var(--card);
+      border-radius: 8px;
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .failed-headline {
+      font-family: var(--font-display);
+      font-weight: 400; font-size: 22px; line-height: 1.30;
+      color: var(--foreground);
+      margin-bottom: 8px;
+    }
+    .failed-body {
+      font-size: 17px; color: var(--muted-foreground);
+      margin-bottom: 24px;
+      max-width: 48ch; margin-left: auto; margin-right: auto;
+    }
+    .failed-actions {
+      display: flex; gap: 8px; justify-content: center;
+    }
+
+    .delete-link {
+      font-size: 14px; color: var(--destructive);
+      background: transparent; border: none;
+      cursor: pointer;
+      padding: 8px 12px;
+    }
+  </style>
+</head>
+<body>
+  <!-- ─── STATE 1: empty receipts list ─── -->
+  <div class="state-label">State 01, /receipts, empty</div>
+  <div class="frame">
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <span class="wordmark">Centfolio</span>
+        <nav class="nav-links">
+          <a class="nav-link" href="#">Dashboard</a>
+          <a class="nav-link" href="#">Transactions</a>
+          <a class="nav-link active" href="#">Receipts</a>
+        </nav>
+      </div>
+      <div class="top-bar-right">
+        <button class="icon-button" aria-label="Theme">○</button>
+        <button class="initials-circle">AB</button>
+      </div>
+    </header>
+    <main class="page">
+      <div class="page-header">
+        <h1 class="page-title">Receipts</h1>
+        <button class="button-primary">Add receipt</button>
+      </div>
+      <div class="empty-state">
+        <p class="empty-state-display">No receipts yet.</p>
+        <p class="empty-state-body">Paste an emailed receipt to get started.</p>
+        <button class="button-primary">Add receipt</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- ─── STATE 2: populated receipts list ─── -->
+  <div class="state-label">State 02, /receipts, populated</div>
+  <div class="frame">
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <span class="wordmark">Centfolio</span>
+        <nav class="nav-links">
+          <a class="nav-link" href="#">Dashboard</a>
+          <a class="nav-link" href="#">Transactions</a>
+          <a class="nav-link active" href="#">Receipts</a>
+        </nav>
+      </div>
+      <div class="top-bar-right">
+        <button class="icon-button" aria-label="Theme">○</button>
+        <button class="initials-circle">AB</button>
+      </div>
+    </header>
+    <main class="page">
+      <div class="page-header">
+        <h1 class="page-title">Receipts</h1>
+        <button class="button-primary">Add receipt</button>
+      </div>
+      <table class="receipts-table">
+        <thead>
+          <tr>
+            <th style="width: 48px"></th>
+            <th>Merchant</th>
+            <th style="width: 120px">Date</th>
+            <th style="width: 110px">Status</th>
+            <th class="amount-col" style="width: 120px">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="source-indicator" title="Email">✉</span></td>
+            <td>IKI</td>
+            <td>2026-05-31</td>
+            <td><span class="status-badge confirmed">Confirmed</span></td>
+            <td class="amount-col">19,87&nbsp;€</td>
+          </tr>
+          <tr>
+            <td><span class="source-indicator" title="Photo">▢</span></td>
+            <td>Maxima</td>
+            <td>2026-05-30</td>
+            <td><span class="status-badge parsed">Needs review</span></td>
+            <td class="amount-col">20,08&nbsp;€</td>
+          </tr>
+          <tr>
+            <td><span class="source-indicator" title="Photo">▢</span></td>
+            <td style="color: var(--placeholder)">&middot;</td>
+            <td>2026-05-30</td>
+            <td><span class="status-badge parsing">Parsing</span></td>
+            <td class="amount-col" style="color: var(--placeholder)">&middot;</td>
+          </tr>
+          <tr>
+            <td><span class="source-indicator" title="Email">✉</span></td>
+            <td>LIDL</td>
+            <td>2026-05-28</td>
+            <td><span class="status-badge confirmed">Confirmed</span></td>
+            <td class="amount-col">34,27&nbsp;€</td>
+          </tr>
+          <tr>
+            <td><span class="source-indicator" title="Photo">▢</span></td>
+            <td>RIMI</td>
+            <td>2026-05-25</td>
+            <td><span class="status-badge failed">Failed</span></td>
+            <td class="amount-col" style="color: var(--placeholder)">&middot;</td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+
+  <!-- ─── STATE 3: entry sheet open, text mode ─── -->
+  <div class="state-label">State 03, /receipts?new=true, text mode</div>
+  <div class="frame">
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <span class="wordmark">Centfolio</span>
+        <nav class="nav-links">
+          <a class="nav-link" href="#">Dashboard</a>
+          <a class="nav-link" href="#">Transactions</a>
+          <a class="nav-link active" href="#">Receipts</a>
+        </nav>
+      </div>
+      <div class="top-bar-right">
+        <button class="icon-button" aria-label="Theme">○</button>
+        <button class="initials-circle">AB</button>
+      </div>
+    </header>
+    <main class="page" style="opacity: 0.4;">
+      <div class="page-header">
+        <h1 class="page-title">Receipts</h1>
+      </div>
+    </main>
+    <div class="sheet-backdrop"></div>
+    <aside class="sheet">
+      <h2 class="sheet-title">Add receipt</h2>
+      <label class="field-label" for="receipt-text">Paste an emailed receipt</label>
+      <textarea class="textarea-input" id="receipt-text" placeholder="Paste the body of the receipt email here. The merchant, date, total, and line items will be extracted automatically."></textarea>
+      <p class="privacy-line">Pasted text is sent to Google's Gemini service to extract line items. <a href="#">Learn more</a>.</p>
+      <div class="sheet-actions">
+        <button class="button-ghost">Cancel</button>
+        <button class="button-primary">Save</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ─── STATE 4: detail page, parsing skeleton ─── -->
+  <div class="state-label">State 04, /receipts/[id], parsing</div>
+  <div class="frame">
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <span class="wordmark">Centfolio</span>
+        <nav class="nav-links">
+          <a class="nav-link" href="#">Dashboard</a>
+          <a class="nav-link" href="#">Transactions</a>
+          <a class="nav-link active" href="#">Receipts</a>
+        </nav>
+      </div>
+      <div class="top-bar-right">
+        <button class="icon-button" aria-label="Theme">○</button>
+        <button class="initials-circle">AB</button>
+      </div>
+    </header>
+    <main class="page">
+      <div class="page-header">
+        <div>
+          <a class="nav-link" href="#" style="display: block; margin-bottom: 8px;">← Back to receipts</a>
+          <h1 class="page-title">Receipt</h1>
+          <p class="page-meta" style="margin-top: 4px;">
+            <span class="status-badge parsing">Parsing</span>
+            &nbsp;&nbsp;Source: pasted email
+          </p>
+        </div>
+        <button class="delete-link">Delete</button>
+      </div>
+      <div class="detail-layout">
+        <section class="evidence-pane">
+          <span class="field-label">Source text</span>
+          <pre class="source-text-block">Maxima LT, UAB
+Klaipėda, Tilžės g. 71
+
+2026-05-30 18:42  Kvitas Nr. 1832
+
+Pienas Rokiškio 2,5%, 1L     1,29
+Duona Bočių ruginė           1,89
+Bananai 0,342 kg @ 2,50/kg   0,86
+Obuoliai 1,39 X 2 vnt.       2,78
+Sūris Džiugas, 200g          4,19
+ACIU nuolaida prekei        -0,80
+...</pre>
+        </section>
+        <section>
+          <div class="parsed-card">
+            <div class="skeleton skeleton-text" style="width: 50%; height: 28px; margin-bottom: 8px;"></div>
+            <div class="skeleton skeleton-text" style="width: 24%; height: 14px; margin-bottom: 24px;"></div>
+            <div class="line-items">
+              <div class="skeleton-line-item">
+                <div class="skeleton skeleton-text" style="width: 70%;"></div>
+                <div class="skeleton skeleton-text" style="width: 48px; justify-self: end;"></div>
+                <div class="skeleton skeleton-text" style="width: 64px; justify-self: end;"></div>
+              </div>
+              <div class="skeleton-line-item">
+                <div class="skeleton skeleton-text" style="width: 55%;"></div>
+                <div class="skeleton skeleton-text" style="width: 56px; justify-self: end;"></div>
+                <div class="skeleton skeleton-text" style="width: 60px; justify-self: end;"></div>
+              </div>
+              <div class="skeleton-line-item">
+                <div class="skeleton skeleton-text" style="width: 78%;"></div>
+                <div class="skeleton skeleton-text" style="width: 40px; justify-self: end;"></div>
+                <div class="skeleton skeleton-text" style="width: 72px; justify-self: end;"></div>
+              </div>
+              <div class="skeleton-line-item">
+                <div class="skeleton skeleton-text" style="width: 60%;"></div>
+                <div class="skeleton skeleton-text" style="width: 52px; justify-self: end;"></div>
+                <div class="skeleton skeleton-text" style="width: 56px; justify-self: end;"></div>
+              </div>
+              <div class="skeleton-line-item">
+                <div class="skeleton skeleton-text" style="width: 64%;"></div>
+                <div class="skeleton skeleton-text" style="width: 48px; justify-self: end;"></div>
+                <div class="skeleton skeleton-text" style="width: 68px; justify-self: end;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- ─── STATE 5: detail page, parsed (review UI) ─── -->
+  <div class="state-label">State 05, /receipts/[id], parsed</div>
+  <div class="frame">
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <span class="wordmark">Centfolio</span>
+        <nav class="nav-links">
+          <a class="nav-link" href="#">Dashboard</a>
+          <a class="nav-link" href="#">Transactions</a>
+          <a class="nav-link active" href="#">Receipts</a>
+        </nav>
+      </div>
+      <div class="top-bar-right">
+        <button class="icon-button" aria-label="Theme">○</button>
+        <button class="initials-circle">AB</button>
+      </div>
+    </header>
+    <main class="page">
+      <div class="page-header">
+        <div>
+          <a class="nav-link" href="#" style="display: block; margin-bottom: 8px;">← Back to receipts</a>
+          <h1 class="page-title">Receipt</h1>
+          <p class="page-meta" style="margin-top: 4px;">
+            <span class="status-badge parsed">Needs review</span>
+            &nbsp;&nbsp;Source: photo
+          </p>
+        </div>
+        <button class="delete-link">Delete</button>
+      </div>
+      <div class="detail-layout">
+        <section class="evidence-pane">
+          <span class="field-label">Photo</span>
+          <div class="photo-thumb">[ receipt photo ]</div>
+        </section>
+        <section>
+          <div class="parsed-card">
+            <div class="receipt-merchant" contenteditable="true">Maxima</div>
+            <div class="receipt-date">
+              <input type="date" value="2026-05-30" />
+            </div>
+            <div class="line-items">
+              <div class="line-item">
+                <span class="line-item-name"><input value="Pienas Rokiškio 2,5%, 1L"></span>
+                <span class="line-item-qty">1</span>
+                <span class="line-item-total">1,29&nbsp;€</span>
+              </div>
+              <div class="line-item">
+                <span class="line-item-name"><input value="Duona Bočių ruginė"></span>
+                <span class="line-item-qty">1</span>
+                <span class="line-item-total">1,89&nbsp;€</span>
+              </div>
+              <div class="line-item">
+                <span class="line-item-name"><input value="Bananai"></span>
+                <span class="line-item-qty">0,342&nbsp;kg</span>
+                <span class="line-item-total">0,86&nbsp;€</span>
+              </div>
+              <div class="line-item">
+                <span class="line-item-name"><input value="Obuoliai"></span>
+                <span class="line-item-qty">2&nbsp;vnt</span>
+                <span class="line-item-total">2,78&nbsp;€</span>
+              </div>
+              <div class="line-item">
+                <span class="line-item-name"><input value="Sūris Džiugas, 200g"></span>
+                <span class="line-item-qty">1</span>
+                <span class="line-item-total">4,19&nbsp;€</span>
+              </div>
+              <div class="line-item subordinate">
+                <span class="line-item-name"><input value="ACIU nuolaida prekei"></span>
+                <span class="line-item-qty"></span>
+                <span class="line-item-total negative">−0,80&nbsp;€</span>
+              </div>
+              <div class="line-item subordinate">
+                <span class="line-item-name"><input value="Atsiskaityta MAXIMOS pinigais"></span>
+                <span class="line-item-qty"></span>
+                <span class="line-item-total negative">−0,17&nbsp;€</span>
+              </div>
+            </div>
+            <div class="line-items-actions">
+              <button class="button-ghost">+ Add line</button>
+            </div>
+            <div class="total-row">
+              <span class="total-label">Receipt total</span>
+              <span class="total-value">20,08&nbsp;€</span>
+            </div>
+            <div class="confirm-actions">
+              <button class="button-ghost">Reparse</button>
+              <button class="button-primary">Confirm</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- ─── STATE 6: detail page, failed ─── -->
+  <div class="state-label">State 06, /receipts/[id], failed</div>
+  <div class="frame">
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <span class="wordmark">Centfolio</span>
+        <nav class="nav-links">
+          <a class="nav-link" href="#">Dashboard</a>
+          <a class="nav-link" href="#">Transactions</a>
+          <a class="nav-link active" href="#">Receipts</a>
+        </nav>
+      </div>
+      <div class="top-bar-right">
+        <button class="icon-button" aria-label="Theme">○</button>
+        <button class="initials-circle">AB</button>
+      </div>
+    </header>
+    <main class="page">
+      <div class="page-header">
+        <div>
+          <a class="nav-link" href="#" style="display: block; margin-bottom: 8px;">← Back to receipts</a>
+          <h1 class="page-title">Receipt</h1>
+          <p class="page-meta" style="margin-top: 4px;">
+            <span class="status-badge failed">Failed</span>
+            &nbsp;&nbsp;Source: pasted email
+          </p>
+        </div>
+        <button class="delete-link">Delete</button>
+      </div>
+      <div class="detail-layout">
+        <section class="evidence-pane">
+          <span class="field-label">Source text</span>
+          <pre class="source-text-block">From: do-not-reply@iki.lt
+Subject: Jūsų pirkimo kvitas
+
+[unparseable content, likely partial copy]
+</pre>
+        </section>
+        <section>
+          <div class="failed-card">
+            <div style="font-size: 28px; color: var(--destructive); margin-bottom: 12px; line-height: 1;">!</div>
+            <p class="failed-headline">Couldn't parse this receipt.</p>
+            <p class="failed-body">The pasted text didn't have enough structure for the parser to extract line items. Try pasting the full email body, or delete this and start again.</p>
+            <div class="failed-actions">
+              <button class="button-primary">Try again</button>
+              <button class="button-ghost">Delete</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
