@@ -102,18 +102,34 @@ manually, classify it, and find any past transaction in under three
 clicks. See `docs/plans/phase-2-transactions.md` for the execution
 breakdown.
 
-### Phase 3 — Receipts
-**Goal**: A photographed receipt becomes structured data.
+### Phase 3: Receipts ✓ shipped 2026-05-31
+**Goal**: A photographed receipt or a pasted email-receipt text
+becomes structured data.
 
-- Receipt upload (single photo, mobile camera capture works)
-- Gemini 2.5 Flash extracts merchant, date, total, and line items
-- User reviews extracted data and corrects errors
-- Receipt persists with line items linked to it
-- Receipts list view, individual receipt detail view
+- Two input modes: pasted text (Maxima Ačiū, IKI Bonus, etc.) and
+  photo upload (single photo, mobile camera capture works)
+- Gemini 3.5 Flash (bare stable identifier) extracts merchant, date,
+  total, and line items. ADR-0003 amended on 2026-05-31 to record the
+  2.5 to 3.5 transition and the bare-stable-identifier policy.
+- Sync-behind-navigation pipeline: upload posts -> row in `parsing`
+  -> `router.push('/receipts/[id]')` -> RSC awaits Gemini inside a
+  `<Suspense>` boundary with a skeleton fallback
+- User reviews extracted data and corrects errors; inline editing
+  with focus-state Cut-Into-the-Page treatment
+- Receipt persists with signed line items (discount and split-tender
+  lines admitted as negative `lineTotalCents`)
+- `parseAttempts` cap (3, server-side reset) plus account-level
+  billing/quota cap as defense-in-depth
+- Honest privacy disclaimer + `/about/privacy` page
+- Server-side `sharp` pipeline (decode/rotate/resize 1600px/JPEG
+  q=85/strip EXIF) before storage and before the Gemini call
 
-**Success criteria**: A photo of a typical Maxima / IKI / LIDL receipt
-produces a correctly-parsed digital record 90% of the time. The other 10%
-is correctable in under a minute.
+**Success criteria**: A photo or pasted text of a typical Maxima /
+IKI / LIDL receipt produces a correctly-parsed digital record 90% of
+the time. The other 10% is correctable in under a minute. Validated
+manually on a real Maxima Tiškevičiaus receipt (UAB MAXIMA LT) with
+per-item discount, MAXIMOS pinigais split-tender, and multi-quantity
+lines.
 
 ### Phase 4 — Bank sync and AI categorization
 **Goal**: SEB transactions flow in automatically, pre-categorized.

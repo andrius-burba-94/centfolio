@@ -1,7 +1,10 @@
 import "server-only";
 
 import { requireAuthenticatedPb } from "@/lib/auth/session";
-import { parseReceiptText } from "@/lib/gemini/client";
+import {
+  parseReceiptPhoto,
+  parseReceiptText,
+} from "@/lib/gemini/client";
 import {
   GeminiResponseError,
   type GeminiFailureReason,
@@ -41,8 +44,22 @@ export async function parseReceiptIfNeeded(
     return markFailed(receiptId, "exceeded-parse-attempts");
   }
 
-  if (!initial.sourceText || initial.sourceText.length === 0) {
-    return markFailed(receiptId, "upstream-error", "No source text on row.");
+  if (initial.sourceType === "text") {
+    if (!initial.sourceText || initial.sourceText.length === 0) {
+      return markFailed(
+        receiptId,
+        "upstream-error",
+        "No source text on row.",
+      );
+    }
+  } else if (initial.sourceType === "photo") {
+    if (!initial.photo) {
+      return markFailed(
+        receiptId,
+        "upstream-error",
+        "No photo on row.",
+      );
+    }
   }
 
   // Increment attempts BEFORE firing Gemini. Abandoned tabs count
@@ -50,9 +67,14 @@ export async function parseReceiptIfNeeded(
   await incrementAttempts(receiptId, initial.parseAttempts + 1);
 
   try {
-    const parsed = await parseReceiptText(initial.sourceText, {
-      signal: options.signal,
-    });
+    const parsed = initial.sourceType === "text"
+      ? await parseReceiptText(initial.sourceText, {
+        signal: options.signal,
+      })
+      : await parseReceiptPhoto(
+        await loadReceiptPhotoBytes(initial.id, initial.photo),
+        { signal: options.signal },
+      );
 
     const { pb, user } = await requireAuthenticatedPb();
 
@@ -118,6 +140,30 @@ async function incrementAttempts(
     userId: user.id,
     parseAttempts: next,
   });
+}
+
+/**
+ * Fetch the normalized JPEG bytes from PocketBase file storage for
+ * the given receipt. Auth-flows through the user's PB cookie so the
+ * file URL respects collection rules; no public file URL is needed.
+ */
+async function loadReceiptPhotoBytes(
+  receiptId: string,
+  photoFilename: string,
+): Promise<Buffer> {
+  const { pb } = await requireAuthenticatedPb();
+  const record = await pb.collection("receipts").getOne(receiptId);
+  const url = pb.files.getURL(record, photoFilename);
+  const response = await fetch(url, {
+    headers: { Authorization: pb.authStore.token },
+  });
+  if (!response.ok) {
+    throw new GeminiResponseError(
+      "upstream-error",
+      `Failed to read receipt photo: ${response.status}`,
+    );
+  }
+  return Buffer.from(await response.arrayBuffer());
 }
 
 async function markFailed(

@@ -68,15 +68,47 @@ export default async function ReceiptDetailPage({
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <aside className="rounded-md bg-card p-4 lg:sticky lg:top-6 lg:self-start">
-          <Label>Source text</Label>
-          <pre
-            className="mt-3 max-h-[480px] overflow-y-auto rounded-sm border border-border bg-background p-3 font-mono text-xs leading-relaxed text-foreground"
-            data-testid="receipt-source-text"
-          >
-            {receipt.sourceText || (
-              <span className="text-placeholder">No source text on row.</span>
+          {receipt.sourceType === "photo"
+            ? (
+              <>
+                <Label>Photo</Label>
+                {receipt.photo
+                  ? (
+                    // The photo is already server-side normalized to
+                    // <= 1600px JPEG by sharp before storage, so
+                    // next/image would add little value here and would
+                    // require configuring remotePatterns for the PB
+                    // host. Plain <img> is the right call for Phase 3.
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={photoUrl(receipt.id, receipt.photo)}
+                      alt="Receipt"
+                      className="mt-3 max-h-[640px] w-full rounded-sm border border-border bg-background object-contain"
+                      data-testid="receipt-photo"
+                    />
+                  )
+                  : (
+                    <p className="mt-3 text-label text-placeholder">
+                      No photo on row.
+                    </p>
+                  )}
+              </>
+            )
+            : (
+              <>
+                <Label>Source text</Label>
+                <pre
+                  className="mt-3 max-h-[480px] overflow-y-auto rounded-sm border border-border bg-background p-3 font-mono text-xs leading-relaxed text-foreground"
+                  data-testid="receipt-source-text"
+                >
+                  {receipt.sourceText || (
+                    <span className="text-placeholder">
+                      No source text on row.
+                    </span>
+                  )}
+                </pre>
+              </>
             )}
-          </pre>
         </aside>
 
         <div>
@@ -95,4 +127,10 @@ function Label({ children }: { children: React.ReactNode }) {
       {children}
     </span>
   );
+}
+
+function photoUrl(receiptId: string, filename: string): string {
+  const base = process.env.NEXT_PUBLIC_POCKETBASE_URL ??
+    process.env.POCKETBASE_URL ?? "http://127.0.0.1:8090";
+  return `${base}/api/files/receipts/${receiptId}/${filename}`;
 }
