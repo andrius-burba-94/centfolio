@@ -17,7 +17,10 @@ export function toReceipt(r: RecordModel): Receipt {
     sourceText: r.sourceText ? String(r.sourceText) : "",
     photo: r.photo ? String(r.photo) : "",
     merchant: r.merchant ? String(r.merchant) : "",
-    date: r.date ? String(r.date) : "",
+    // PB stores date fields as full datetimes ("YYYY-MM-DD HH:MM:SS.sssZ").
+    // Normalize to YYYY-MM-DD so <input type="date"> and the Zod regex on
+    // confirmReceipt accept the value without further parsing.
+    date: r.date ? String(r.date).slice(0, 10) : "",
     totalCents: r.totalCents === null || r.totalCents === undefined
       ? null
       : Number(r.totalCents),
